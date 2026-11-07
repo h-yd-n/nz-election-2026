@@ -278,6 +278,20 @@ section.view { display: grid; }
 .simout { color: var(--muted); font-size: 13px; }
 .simout b { color: var(--fg); }
 .simsub { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; }
+.plean { margin-top: 14px; font-size: 13.5px; }
+.plean summary { cursor: pointer; font-weight: 600; width: fit-content; }
+.plean-n { color: var(--muted); font-weight: 500; }
+.plean .note { margin: 6px 0 10px; color: var(--muted); font-size: 13px; max-width: 72ch; }
+.plean-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px 16px; }
+.pl { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.pl .pn { font-weight: 600; display: flex; gap: 8px; align-items: center; }
+.pl .sub { grid-column: 1 / -1; color: var(--faint); font-size: 12px; }
+.pl .sub b { color: var(--muted); font-weight: 600; }
+.step { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: var(--r); background: var(--raised); }
+.step button { background: none; border: 0; width: 28px; height: 28px; font-size: 16px; line-height: 1; color: var(--fg); cursor: pointer; }
+.step button:hover { background: var(--track); }
+.step output { min-width: 50px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
+.pl.set .step { border-color: var(--fg); }
 @media (max-width: 720px) { .simctl { grid-template-columns: minmax(0, 1fr); gap: 6px; } .simctl > span:empty { display: none; } .simctl label { margin-top: 8px; } }
 .simgrid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 32px; align-items: start; }
 @media (max-width: 900px) { .simgrid { grid-template-columns: minmax(0, 1fr); } }
@@ -452,6 +466,11 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
         <span class="simout" id="simSkewOut"></span>
         <span></span><span></span><button class="linkbtn" id="simReset" style="justify-self:start;font-size:13px">Reset</button>
       </div>
+      <details class="plean" id="plean">
+        <summary>Adjust lean by party <span class="plean-n" id="pleanN"></span></summary>
+        <p class="note">Lean is how much more likely a party's voters were to vote special in 2023, relative to the average voter. Above 1.00× means a bigger share of specials than of ordinary votes. Specials are shared out in proportion, so raising one party lowers the rest. Each party's resulting share of specials is shown under it.</p>
+        <div class="plean-grid" id="pleanGrid"></div>
+      </details>
       <div class="simgrid">
         <div class="scroll-x">
           <table class="vtable simt">
@@ -968,7 +987,7 @@ dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 //     candidate vote) and the candidate's party lean (2023 candidate files don't list parties).
 // Seats are then re-run through MMP with projected electorate winners. Independent winners take seats
 // out of the 120 before the list allocation.
-const SIM = { on: false, target: null, skew: 1, result: null };
+const SIM = { on: false, target: null, skew: 1, result: null, lean: {} }; // lean: per-party national lean overrides
 const SHRINK = 40; // pseudo-count, in expected special votes, pulling small local leans towards the average
 const normName = s => String(s || "").normalize("NFC").toLowerCase().replace(/[’']/g, "").replace(/\(.*?\)/g, "").replace(/[^a-zā-ū0-9 ]/g, " ").replace(/\b(party|the|nz|new zealand|aotearoa)\b/g, " ").replace(/\s+/g, " ").trim();
 const SP_ALIAS = { "The Opportunities Party (TOP)": "OPP", "Te Pāti Māori": "TPMAO", "Green Party": "GP", "Labour Party": "LAB", "National Party": "NAT", "ACT New Zealand": "ACT", "New Zealand First Party": "NZF", "Aotearoa Legalise Cannabis Party": "ALCP", "Animal Justice Party": "AJP" };
@@ -1082,10 +1101,23 @@ function lean2023(e) {
   return { rows, rate, from: prof.from };
 }
 
+// A party's national lean under the overall setting, before any override
+function natLean(pid) {
+  if (!SPM) SPM = prepSpecials();
+  const i = SPM ? SPM.col2pid.indexOf(pid) : -1;
+  return Math.pow(i >= 0 ? SPM.kFb[i] : 1, SIM.skew);
+}
+
 function runSpecials() {
   if (!SPM) SPM = prepSpecials();
   if (!SPM) return null;
-  const kFor = (prof, pid) => { const i = SPM.col2pid.indexOf(pid); return Math.pow(i >= 0 ? prof.k[i] : 1, SIM.skew); };
+  // Local lean, raised to the overall setting. A per-party override rescales that party's lean everywhere so its
+  // national average lean equals the value set, keeping each electorate's pattern relative to that average.
+  const kFor = (prof, pid) => {
+    const i = SPM.col2pid.indexOf(pid);
+    const k = Math.pow(i >= 0 ? prof.k[i] : 1, SIM.skew);
+    return SIM.lean[pid] != null ? k * SIM.lean[pid] / natLean(pid) : k;
+  };
   // pass 1: finished ordinary count and each electorate's share of the specials
   const rows = DATA.electorates.map(e => {
     const prof = SPM.profiles[e.id];
@@ -1192,6 +1224,7 @@ function renderSim() {
       <td class="r num ${ds ? (ds > 0 ? "up" : "dn") : ""}">${ds ? d(ds, 0) : ""}</td>
     </tr>`;
   }).join("") + indRow;
+  renderLean(R);
   const majority = Math.floor(R.house / 2) + 1;
   const who = c => isListParty(c.party) ? esc(pabbr(parties[c.party])) : "Ind";
   const firm = w => w.pe && w.pe.fits ? ` <span class="firm">· ahead in ${Math.round(w.pe.holds * w.pe.fits)} of ${w.pe.fits} fits</span>` : "";
@@ -1206,12 +1239,46 @@ function renderSim() {
     ${R.noResult.length ? `<div><div class="label">No result yet</div><p>${R.noResult.map(w => esc(w.e.name)).join(", ")}</p></div>` : ""}`;
 }
 
+const LEAN_STEP = 0.05, LEAN_MIN = 0.2, LEAN_MAX = 3;
+const leanParties = () => DATA.parties.filter(p => p.seats > 0 && isListParty(p.id)).sort((a, b) => b.votes - a.votes);
+function renderLean(R) {
+  const specTot = R.parties.reduce((a, p) => a + p.specials, 0);
+  const pr = id => R.parties.find(p => p.id === id);
+  const nSet = Object.keys(SIM.lean).length;
+  $("#pleanN").textContent = nSet ? `(${nSet} changed)` : "";
+  $("#pleanGrid").innerHTML = leanParties().map(p => {
+    const set = SIM.lean[p.id] != null, v = set ? SIM.lean[p.id] : natLean(p.id);
+    const share = specTot ? pr(p.id).specials / specTot * 100 : 0;
+    const ordShare = p.pct;
+    return `<div class="pl${set ? " set" : ""}" data-pid="${p.id}">
+      <div class="pn"><span class="sw" style="background:${pc(p)}"></span><span>${esc(pabbr(p))}</span></div>
+      <div class="step" role="group" aria-label="${esc(pname(p))} lean">
+        <button type="button" data-d="-1" aria-label="Lower ${esc(pabbr(p))} lean">−</button>
+        <output>${v.toFixed(2)}×</output>
+        <button type="button" data-d="1" aria-label="Raise ${esc(pabbr(p))} lean">+</button>
+      </div>
+      <div class="sub"><b>${share.toFixed(1)}%</b> of specials vs ${ordShare.toFixed(1)}% tonight${set ? ` · <button type="button" class="linkbtn" data-reset>reset to ${natLean(p.id).toFixed(2)}×</button>` : ""}</div>
+    </div>`;
+  }).join("");
+}
+$("#pleanGrid").addEventListener("click", ev => {
+  const row = ev.target.closest(".pl"); if (!row) return;
+  const pid = row.dataset.pid;
+  if (ev.target.closest("[data-reset]")) { delete SIM.lean[pid]; refreshParl(); return; }
+  const b = ev.target.closest("button[data-d]"); if (!b) return;
+  const cur = SIM.lean[pid] != null ? SIM.lean[pid] : natLean(pid);
+  const next = Math.min(LEAN_MAX, Math.max(LEAN_MIN, Math.round((cur + LEAN_STEP * +b.dataset.d) / LEAN_STEP) * LEAN_STEP));
+  SIM.lean[pid] = +next.toFixed(2);
+  refreshParl();
+  const again = $(`#pleanGrid .pl[data-pid="${pid}"] button[data-d="${b.dataset.d}"]`); if (again) again.focus(); // keep keyboard focus after re-render
+});
+
 $("#simVol").addEventListener("input", e => { SIM.target = +e.target.value; refreshParl(); });
 $("#simSkew").addEventListener("input", e => { SIM.skew = +e.target.value / 100; refreshParl(); });
 $("#simApply").addEventListener("click", () => { SIM.on = !SIM.on; refreshParl(); });
 $("#eSimToggle").addEventListener("click", () => { SIM.on = !SIM.on; refreshParl(); });
 $("#simOff").addEventListener("click", () => { SIM.on = false; refreshParl(); });
-$("#simReset").addEventListener("click", () => { SIM.target = null; SIM.skew = 1; $("#simSkew").value = 100; refreshParl(); });
+$("#simReset").addEventListener("click", () => { SIM.target = null; SIM.skew = 1; SIM.lean = {}; $("#simSkew").value = 100; refreshParl(); });
 
 /* ---------- routing ---------- */
 function route() {
@@ -1267,7 +1334,7 @@ function renderSimBars() {
   const label = SIM.on ? "Turn off projection" : "Apply special votes projection";
   for (const id of ["#simApply", "#eSimToggle"]) { $(id).setAttribute("aria-pressed", SIM.on); $(id).textContent = label; }
   if (has) $("#eSimText").innerHTML = SIM.on
-    ? `With projected specials (${fmt(Math.round(SIM.result.specTotal / 1000) * 1000)}, ${SIM.skew === 1 ? "2023 lean" : Math.round(SIM.skew * 100) + "% of 2023 lean"})`
+    ? `With projected specials (${fmt(Math.round(SIM.result.specTotal / 1000) * 1000)}, ${SIM.skew === 1 ? "2023 lean" : Math.round(SIM.skew * 100) + "% of 2023 lean"}${Object.keys(SIM.lean).length ? ", party leans adjusted" : ""})`
     : "";
 }
 function renderAll() {
