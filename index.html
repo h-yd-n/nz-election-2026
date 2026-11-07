@@ -278,8 +278,10 @@ section.view { display: grid; }
 .simout { color: var(--muted); font-size: 13px; }
 .simout b { color: var(--fg); }
 .simsub { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; }
+.simdek { margin: -4px 0 16px; } .simdek p { margin: 0 0 8px; }
 .plean { margin-top: 14px; font-size: 13.5px; }
 .plean summary { cursor: pointer; font-weight: 600; width: fit-content; }
+.plean[open] summary { margin-bottom: 10px; }
 .plean-n { color: var(--muted); font-weight: 500; }
 .plean .note { margin: 6px 0 10px; color: var(--muted); font-size: 13px; max-width: 72ch; }
 .plean-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px 16px; }
@@ -457,6 +459,10 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
         <h2>Special votes</h2>
         <button class="btn" id="simApply" aria-pressed="false">Apply special votes projection</button>
       </div>
+      <div class="dek simdek">
+        <p>Special votes tend to favour some parties more than others, and this can change the final result once all votes are counted.</p>
+        <p>Below you can adjust the number of specials and how much they lean to see how it will affect the final result. The defaults are based on how many special votes the Electoral Commission estimates there are to be counted and how special votes leaned in 2023.</p>
+      </div>
       <div class="simctl">
         <label for="simVol">Special votes</label>
         <input type="range" id="simVol" min="0" max="900000" step="5000" value="400000">
@@ -468,7 +474,6 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
       </div>
       <details class="plean" id="plean">
         <summary>Adjust lean by party <span class="plean-n" id="pleanN"></span></summary>
-        <p class="note">How strongly each party's voters cast special votes, starting from 2023. 1.00× is average. Raising one party takes specials from the others.</p>
         <div class="plean-grid" id="pleanGrid"></div>
       </details>
       <div class="simgrid">
