@@ -890,7 +890,7 @@ function openDetail(id) {
         const rng = ci => S.length ? ` <span class="rng">(${Math.round(pctile(S.map(T => T[j][ci]), 0.1) * 100)}–${Math.round(pctile(S.map(T => T[j][ci]), 0.9) * 100)})</span>` : "";
         return `<div class="srow"><span class="lname"><span class="sw" style="background:${pc(p)}"></span>${esc(pabbr(p))}</span><span>${tops.map(([cid, v, ci]) => `${esc(cname(cid))} <span class="num">${Math.round(v * 100)}%</span>${rng(ci)}`).join(" · ")}</span></div>`;
       }).join("");
-    splitHTML = `<div class="dsec"><h3>How party voters split their candidate vote</h3><p class="note">Estimated from ${tr.places} voting places. Projected specials follow these splits.</p><div class="splitlist">${rows}</div></div>`;
+    splitHTML = `<div class="dsec"><h3>Estimated vote split by party vote</h3><p class="note">Estimated from ${tr.places} voting places. Projected specials follow these splits.</p><div class="splitlist">${rows}</div></div>`;
   }
   const L23 = DATA.sp23 ? lean2023(e) : null;
   let leanHTML = "";
