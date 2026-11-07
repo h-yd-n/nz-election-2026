@@ -254,18 +254,13 @@ section.view { display: grid; }
 @media (max-width: 760px) {
   .hide-sm { display: none; }
   .vtable .short { display: inline; } .vtable .wide { display: none; }
-  .vtable td, .vtable th { padding-inline: 5px; }
-  .vtable .pn span:last-child { max-width: 96px; }
-  .margin { gap: 3px; } .margin svg { width: 36px; } .margin .m { min-width: 0; }
+  .vtable td, .vtable th { padding-inline: 4px; }
+  .vtable .pn span:last-child { max-width: 78px; }
+  .margin { font-size: 12px; letter-spacing: -0.01em; }
 }
 
 /* Seat margins, overhang, trend */
-.margin { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); cursor: help; font-variant-numeric: tabular-nums; }
-.margin .m { min-width: 4.4ch; }
-.margin .m.l { text-align: right; }
-.margin .m.near { color: var(--fg); font-weight: 700; }
-.margin svg { display: block; overflow: visible; }
-.mfar { font-size: 12.5px; color: var(--faint); }
+.margin { font-size: 13px; color: var(--fg); cursor: help; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .mnone { color: var(--faint); }
 .over { font-weight: 700; cursor: help; }
 
@@ -457,7 +452,7 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
       <h2>Party vote</h2>
       <div class="scroll-x">
         <table class="vtable">
-          <thead><tr><th>Party</th><th class="r hide-sm">Votes</th><th class="r">%</th><th class="barcell hide-sm"></th><th class="r hide-sm">Elect.</th><th class="r hide-sm">List</th><th class="r">Seats</th><th class="r" title="Electorate seats won beyond the party's party-vote entitlement"><span class="wide">Overhang</span><span class="short">Over.</span></th><th class="mcell"><span class="wide">Seat margin <span class="thint">(pts)</span></span><span class="short">Margin</span></th></tr></thead>
+          <thead><tr><th>Party</th><th class="r hide-sm">Votes</th><th class="r">%</th><th class="barcell hide-sm"></th><th class="r hide-sm">Elect.</th><th class="r hide-sm">List</th><th class="r">Seats</th><th class="r" title="Electorate seats won beyond the party's party-vote entitlement"><span class="wide">Overhang</span><span class="short">Over.</span></th><th class="mcell"><span class="wide">Seat ± <span class="thint">(pts)</span></span><span class="short">Seat ±</span></th></tr></thead>
           <tbody id="vbody"></tbody>
         </table>
       </div>
@@ -777,27 +772,17 @@ function marginCell(p, base) {
   const qualifies = p.pct >= MMP_THRESHOLD || p.elect >= 1;
   if (!qualifies) {
     if (p.pct < 1) return `<span class="mnone">–</span>`;
-    const g = mmpMargin(p.id, 1, base);
-    return `<span class="mfar" title="${esc(pname(p))} needs ${(MMP_THRESHOLD - p.pct).toFixed(2)} more points to reach 5%${g ? `, which would bring ${g.seats} seats` : ""}">${(MMP_THRESHOLD - p.pct).toFixed(2)} to 5%</span>`;
+    const need = MMP_THRESHOLD - p.pct, g = mmpMargin(p.id, 1, base);
+    return `<span class="margin" title="${esc(pname(p))} needs ${need.toFixed(2)} more points to reach 5%${g ? `, which would bring ${g.seats} seats` : ""}">+${need.toFixed(2)} → 5%</span>`;
   }
+  // the nearer of gaining or losing a seat, in percentage points; the other direction goes in the tooltip
   const g = mmpMargin(p.id, 1, base), l = mmpMargin(p.id, -1, base);
-  const now = p.seats, nm = esc(pname(p));
-  const title = [g ? `${g.seats} seats at ${(p.pct + g.pts).toFixed(2)}%` : "", l ? `${l.seats} at ${(p.pct - l.pts).toFixed(2)}%` : `can't fall below ${now}`].filter(Boolean).join(" · ");
-  // gauge: where the share sits between the lose and gain points
-  const lp = l ? l.pts : null, gp = g ? g.pts : null;
-  const pos = lp == null ? 0 : gp == null ? 1 : lp / (lp + gp);
-  const near = lp != null && (gp == null || lp < gp) ? "l" : "g";
-  const W = 64;
-  return `<span class="margin" title="${title}">
-    <span class="m l ${near === "l" ? "near" : ""}">${lp == null ? "–" : "−" + lp.toFixed(2)}</span>
-    <svg width="${W}" height="14" viewBox="0 0 ${W} 14" aria-hidden="true">
-      <line x1="2" x2="${W - 2}" y1="7" y2="7" stroke="var(--line)" stroke-width="4" stroke-linecap="round"></line>
-      <line x1="2" x2="2" y1="2" y2="12" stroke="var(--faint)" stroke-width="1.5"></line>
-      <line x1="${W - 2}" x2="${W - 2}" y1="2" y2="12" stroke="var(--faint)" stroke-width="1.5"></line>
-      <circle cx="${(2 + pos * (W - 4)).toFixed(1)}" cy="7" r="4.5" fill="${pc(p)}" stroke="var(--surface)" stroke-width="1.5"></circle>
-    </svg>
-    <span class="m g ${near === "g" ? "near" : ""}">${gp == null ? "–" : "+" + gp.toFixed(2)}</span>
-  </span>`;
+  const gTxt = g ? `Reaches ${g.seats} seats at +${g.pts.toFixed(2)} pts` : "";
+  const lTxt = l ? `Drops to ${l.seats} seats at −${l.pts.toFixed(2)} pts` : `Can't fall below ${p.seats} seats`;
+  const useL = l && (!g || l.pts < g.pts);
+  if (!g && !l) return `<span class="mnone">–</span>`;
+  const cell = useL ? `−${l.pts.toFixed(2)} → ${l.seats}` : `+${g.pts.toFixed(2)} → ${g.seats}`;
+  return `<span class="margin" title="${[gTxt, lTxt].filter(Boolean).join(" · ")}">${cell}</span>`;
 }
 
 /* ---------- electorates ---------- */
