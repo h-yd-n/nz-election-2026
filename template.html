@@ -1,0 +1,1330 @@
+<!doctype html>
+<html lang="en-NZ">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Election Night 2026</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Results desk. White page, one ink colour, hairlines between rows, a heavy rule above each section.
+   Party colours are the only colour; everything else is ink and greys. One radius (4px). */
+:root {
+  --bg: #ffffff;
+  --surface: #f4f5f6;
+  --raised: #ffffff;
+  --fg: #15171a;
+  --muted: #5c636c;
+  --faint: #949ba4;
+  --line: #e2e4e7;
+  --track: #eceef0;
+  --ink: #15171a;
+  --on-ink: #ffffff;
+  --good: #1f7a4d;
+  --warn: #a35f00;
+  --r: 4px;
+
+  --f-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-data: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Party colours */
+  --p-NAT: #1b5fae; --p-LAB: #d82a20; --p-GP: #0f8a3f; --p-ACT: #f2c400;
+  --p-NZF: #2c2c2c; --p-TPMAO: #8e1b3a; --p-OPP: #12b3a0; --p-NC: #29a8e0;
+  --p-ALCP: #7a9a1f; --p-OFP: #a0522d; --p-AJP: #c06aa8; --p-NZLP: #6c4ab6;
+  --p-other: #a4aab1;
+
+  /* Map */
+  --sea: #eef1f3; --land: #ffffff; --coast: #c9ced3;
+  --in: #3d6b57; --new: #12a36b; --out: #c77700; --lean-mid: #cfd3d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101214; --surface: #181b1e; --raised: #1d2024; --fg: #eceef0; --muted: #a3a9b0;
+    --faint: #6c737b; --line: #2a2e33; --track: #23272b; --ink: #eceef0; --on-ink: #101214;
+    --good: #5cc28c; --warn: #e0a24a;
+    --p-NAT: #3f86da; --p-LAB: #f0483c; --p-GP: #2eb362; --p-NZF: #b9bdb9; --p-TPMAO: #c44468;
+    --p-other: #6c737b;
+    --sea: #0b0d0f; --land: #1b1f23; --coast: #343a40;
+    --in: #7fb59a; --new: #3ddc8f; --out: #f0a63a; --lean-mid: #50575d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101214; --surface: #181b1e; --raised: #1d2024; --fg: #eceef0; --muted: #a3a9b0;
+  --faint: #6c737b; --line: #2a2e33; --track: #23272b; --ink: #eceef0; --on-ink: #101214;
+  --good: #5cc28c; --warn: #e0a24a;
+  --p-NAT: #3f86da; --p-LAB: #f0483c; --p-GP: #2eb362; --p-NZF: #b9bdb9; --p-TPMAO: #c44468;
+  --p-other: #6c737b;
+  --sea: #0b0d0f; --land: #1b1f23; --coast: #343a40;
+  --in: #7fb59a; --new: #3ddc8f; --out: #f0a63a; --lean-mid: #50575d;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--f-body); font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  max-width: 1200px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; font-weight: 700; }
+h2 { font-size: 22px; line-height: 1.2; }
+h3 { font-size: 16px; }
+p { margin: 0; }
+.num { font-variant-numeric: tabular-nums; }
+.label, .tag { font-size: 11.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+button, input, select { font: inherit; color: inherit; }
+a { color: inherit; text-underline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.note, .dek { font-size: 13.5px; color: var(--muted); max-width: 68ch; }
+
+/* Buttons and inputs */
+.btn {
+  border: 1px solid var(--line); background: var(--raised); border-radius: var(--r); padding: 6px 12px;
+  font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.btn:hover { border-color: var(--fg); }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.linkbtn { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; font-size: inherit; }
+input[type=search], select {
+  padding: 8px 10px; border-radius: var(--r); border: 1px solid var(--line); background: var(--raised); font-size: 14px;
+}
+input[type=range] { accent-color: var(--ink); }
+
+/* Method notes */
+details.method { font-size: 13px; color: var(--muted); max-width: 72ch; }
+details.method summary { cursor: pointer; color: var(--fg); font-weight: 600; font-size: 13px; width: fit-content; }
+details.method[open] summary { margin-bottom: 6px; }
+details.method ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+
+/* Masthead */
+.mast { padding-block: 28px 0; display: grid; gap: 14px; }
+.mast-top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+.kicker { font-size: 12.5px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
+.mast h1 { font-size: clamp(30px, 4.6vw, 46px); font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+.status { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; }
+.status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); }
+.status.final .dot { background: var(--good); }
+.countbar { display: grid; gap: 8px; }
+.countbar .track { height: 4px; background: var(--track); }
+.countbar .fill { height: 100%; background: var(--fg); transition: width .8s ease; }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 24px; font-size: 13.5px; color: var(--muted); }
+.facts b { color: var(--fg); font-weight: 600; }
+.mast-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 24px; font-size: 12.5px; color: var(--faint); }
+.refresh { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+.refresh .linkbtn { color: var(--fg); }
+.flash { animation: flash 1.2s ease; }
+@keyframes flash { from { color: var(--warn); } to { color: inherit; } }
+
+/* Tabs */
+nav.tabs {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  border-bottom: 1px solid var(--line); margin-top: 18px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+nav.tabs .wrap { display: flex; gap: 24px; overflow-x: auto; }
+nav.tabs a {
+  padding: 12px 0 10px; text-decoration: none; color: var(--muted); font-weight: 600; font-size: 15px;
+  border-bottom: 2px solid transparent; white-space: nowrap;
+}
+nav.tabs a[aria-current="page"] { color: var(--fg); border-bottom-color: var(--fg); }
+nav.tabs a:hover { color: var(--fg); }
+
+main { padding-block: 8px 48px; }
+section.view { display: grid; }
+.block { display: grid; gap: 18px; padding-block: 22px 34px; border-top: 2px solid var(--fg); }
+.view > .block:first-child { border-top: 0; }
+.bhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 20px; }
+.bhead > div { display: grid; gap: 4px; }
+
+/* Projection notice */
+.simbadge, .esim {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; align-items: center;
+  padding: 9px 12px; background: var(--surface); border-radius: var(--r); font-size: 13.5px;
+}
+.simbadge b, .esim b { font-weight: 700; }
+.esim:has(button[aria-pressed="true"]) { box-shadow: inset 0 0 0 1.5px var(--fg); }
+
+/* Parliament */
+.parl { display: grid; grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 900px) { .parl { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
+.chamber { display: grid; gap: 16px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; }
+.legend button { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; padding: 2px 0; cursor: pointer; color: var(--fg); }
+.legend button[aria-pressed="false"] { opacity: .35; }
+.sw { width: 10px; height: 10px; border-radius: 2px; flex: none; display: inline-block; }
+.key { display: flex; gap: 16px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+.key i { display: inline-block; width: 10px; height: 10px; vertical-align: -1px; margin-right: 5px; }
+.key i.e { background: var(--fg); }
+.key i.l { background: color-mix(in srgb, var(--fg) 40%, var(--bg)); }
+
+/* Majority tally */
+.tug { display: grid; gap: 8px; }
+.tug-head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 12px; }
+.tug-head .side { display: grid; gap: 0; min-width: 0; }
+.tug-head .side.b { text-align: right; justify-items: end; }
+.tug-head input {
+  border: 0; border-bottom: 1px dotted var(--faint); background: transparent; padding: 0; width: auto; max-width: 100%; min-width: 3ch; field-sizing: content;
+  font-size: 13px; font-weight: 600; color: var(--muted);
+}
+.tug-head input:focus { color: var(--fg); }
+.tug-head .side.b input { text-align: right; }
+.tug-head .score { font-family: var(--f-display); font-size: 44px; font-weight: 800; line-height: 1.05; letter-spacing: -1px; }
+.tug-head .mid { text-align: center; font-size: 12px; color: var(--muted); line-height: 1.3; }
+.tug-head .mid .num { font-weight: 700; color: var(--fg); font-size: 15px; }
+.tug-wrap { position: relative; }
+.tug-bar { height: 22px; background: var(--track); display: flex; gap: 1px; }
+.tug-bar .seg { height: 100%; transition: flex-basis .7s cubic-bezier(.2,.8,.2,1), opacity .3s ease; flex: 0 0 auto; }
+.tug-bar .seg.faded { opacity: .35; }
+.tug-bar .gap { flex: 1 1 auto; }
+.tug-line { position: absolute; top: -5px; bottom: -5px; width: 2px; background: var(--fg); left: 50%; transform: translateX(-1px); }
+.verdict { font-size: 14px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.pill { font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; font-weight: 700; }
+.pill.ok { color: var(--good); }
+.pill.no { color: var(--muted); }
+
+/* Bloc chips */
+.chips { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: start; }
+.chips .zone { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
+.chips .zone.n { justify-content: center; }
+.chips .zone.b { justify-content: flex-end; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 3px 7px; border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--raised); font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.chip:hover { border-color: var(--fg); }
+.chip .num { color: var(--muted); font-weight: 500; }
+.chips .zone.n .chip { border-style: dashed; }
+.chipreset { font-size: 12px; color: var(--muted); justify-self: start; }
+
+/* Coalition builder */
+.builder { display: grid; gap: 12px; }
+.builder-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.presets { display: flex; gap: 6px; flex-wrap: wrap; }
+.prow {
+  display: grid; grid-template-columns: 10px minmax(0, 1fr) repeat(3, 58px) 34px; align-items: center; gap: 10px;
+  padding: 9px 0; border-bottom: 1px solid var(--line);
+}
+.prow.phead { padding: 0 0 6px; border-bottom: 1px solid var(--fg); font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.prow.phead { align-items: end; }
+.prow.phead span { text-align: center; line-height: 1.2; overflow-wrap: break-word; hyphens: auto; }
+.prow.phead span:nth-child(2) { text-align: left; }
+.prow.phead span:last-child { text-align: right; }
+.prow .sw { width: 10px; height: 26px; border-radius: 2px; }
+.prow .nm { min-width: 0; }
+.prow .nm b { font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prow .nm small { color: var(--muted); font-size: 12px; }
+.prow .seats { font-family: var(--f-display); font-size: 20px; font-weight: 700; text-align: right; }
+.prow label { display: grid; place-items: center; height: 32px; cursor: pointer; border-radius: var(--r); }
+.prow label:hover { background: var(--surface); }
+.prow input[type=radio] { accent-color: var(--ink); width: 16px; height: 16px; margin: 0; cursor: pointer; }
+@media (max-width: 480px) {
+  .prow { grid-template-columns: 8px minmax(0, 1fr) repeat(3, 46px) 32px; gap: 5px; }
+  .prow.phead { font-size: 10px; letter-spacing: 0; }
+}
+
+/* Tables */
+.scroll-x { overflow-x: auto; }
+.vtable { width: 100%; border-collapse: collapse; font-size: 14px; }
+.vtable th { text-align: left; font-weight: 600; color: var(--muted); font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; padding: 0 8px 6px; border-bottom: 1px solid var(--fg); white-space: nowrap; }
+.vtable td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.vtable td:first-child, .vtable th:first-child { padding-left: 0; }
+.vtable td.r, .vtable th.r { text-align: right; }
+.vtable td.num, .vtable td .num { font-variant-numeric: tabular-nums; }
+.vtable .pn { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.vtable .pn span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
+.barcell { width: 22%; min-width: 90px; }
+.vbar { position: relative; height: 10px; background: var(--track); }
+.vbar .f { position: absolute; inset: 0 auto 0 0; transition: width .6s ease; }
+.vbar .thr { position: absolute; top: -3px; bottom: -3px; width: 0; border-left: 1px dashed var(--fg); opacity: .6; }
+.below td { color: var(--faint); }
+.hide-sm { }
+.vtable .short { display: none; }
+.thint { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.mcell { white-space: nowrap; }
+@media (max-width: 760px) {
+  .hide-sm { display: none; }
+  .vtable .short { display: inline; } .vtable .wide { display: none; }
+  .vtable td, .vtable th { padding-inline: 5px; }
+  .vtable .pn span:last-child { max-width: 96px; }
+  .margin { gap: 3px; } .margin svg { width: 36px; } .margin .m { min-width: 0; }
+}
+
+/* Seat margins, overhang, trend */
+.margin { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); cursor: help; font-variant-numeric: tabular-nums; }
+.margin .m { min-width: 4.4ch; }
+.margin .m.l { text-align: right; }
+.margin .m.near { color: var(--fg); font-weight: 700; }
+.margin svg { display: block; overflow: visible; }
+.mfar { font-size: 12.5px; color: var(--faint); }
+.mnone { color: var(--faint); }
+.over { font-weight: 700; cursor: help; }
+.closest { display: flex; flex-wrap: wrap; gap: 6px 22px; align-items: baseline; font-size: 13.5px; }
+.closest .label { width: 100%; }
+.closest .call { display: inline-flex; gap: 6px; align-items: center; }
+.closest .call b { font-weight: 600; }
+
+/* Special votes simulation */
+.simctl { display: grid; grid-template-columns: 180px minmax(160px, 280px) minmax(0, 1fr); gap: 12px 16px; align-items: start; font-size: 13.5px; }
+.simctl label { font-weight: 600; padding-top: 2px; }
+.simctl input[type=range] { width: 100%; }
+.simout { color: var(--muted); font-size: 13px; }
+.simout b { color: var(--fg); }
+.simsub { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; }
+@media (max-width: 720px) { .simctl { grid-template-columns: minmax(0, 1fr); gap: 6px; } .simctl > span:empty { display: none; } .simctl label { margin-top: 8px; } }
+.simgrid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+@media (max-width: 900px) { .simgrid { grid-template-columns: minmax(0, 1fr); } }
+.simt .up, .simt .dn { font-weight: 700; }
+.simnotes { display: grid; gap: 16px; font-size: 13.5px; }
+.simnotes p, .simnotes ul { margin: 4px 0 0; }
+.simnotes ul { padding-left: 18px; display: grid; gap: 4px; }
+
+/* Electorates */
+.etools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.etools input[type=search] { flex: 1 1 240px; min-width: 0; }
+.leadstrip { display: grid; gap: 8px; }
+.leadstrip .bar { display: flex; height: 22px; gap: 1px; }
+.leadstrip .bar div { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; min-width: 0; overflow: hidden; }
+.egrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); column-gap: 28px; }
+.tile {
+  text-align: left; border: 0; border-bottom: 1px solid var(--line); background: none; padding: 12px 0 11px; cursor: pointer;
+  display: grid; gap: 6px; color: inherit; border-radius: 0;
+}
+.tile:hover .tname { text-decoration: underline; text-underline-offset: 3px; }
+.tile .tname { font-family: var(--f-display); font-weight: 700; font-size: 16px; line-height: 1.2; }
+.tile .tlead { display: flex; align-items: center; gap: 7px; font-size: 13.5px; min-width: 0; }
+.tile .tlead span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile .tmeta { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tile .tmargin { height: 4px; background: var(--track); display: flex; }
+.tile .tmargin div { height: 100%; }
+.tag { font-size: 10.5px; }
+.close-race { color: var(--warn); font-weight: 600; }
+.flipchip { color: var(--fg); font-weight: 800; }
+.empty { padding: 40px 0; color: var(--muted); }
+
+/* Electorate detail */
+dialog.detail {
+  border: 0; padding: 0; margin: 0 0 0 auto; height: 100%; max-height: 100%; width: min(580px, 100%);
+  background: var(--bg); color: var(--fg); box-shadow: -1px 0 0 var(--line), -24px 0 48px rgba(0,0,0,.18);
+}
+dialog.detail::backdrop { background: rgba(10, 12, 14, .4); }
+dialog.detail[open] { animation: slide .2s ease; }
+@keyframes slide { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.dwrap { padding: max(22px, env(safe-area-inset-top, 0px)) max(22px, env(safe-area-inset-right, 0px)) 36px 24px; display: grid; gap: 22px; }
+.dhead { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.dhead h2 { font-size: 30px; line-height: 1.05; margin-top: 4px; }
+.xbtn { border: 1px solid var(--line); background: var(--raised); border-radius: var(--r); width: 34px; height: 34px; cursor: pointer; font-size: 18px; line-height: 1; flex: none; }
+.xbtn:hover { border-color: var(--fg); }
+.dstats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--fg); border-bottom: 1px solid var(--line); }
+.dstats div { padding: 10px 12px 10px 0; }
+.dstats div + div { padding-left: 12px; border-left: 1px solid var(--line); }
+.dstats b { display: block; font-family: var(--f-display); font-size: 22px; font-weight: 700; }
+.dstats small { color: var(--muted); font-size: 12px; }
+.callout { display: grid; gap: 2px; }
+.callout .big { font-family: var(--f-display); font-weight: 800; font-size: 24px; line-height: 1.15; display: flex; gap: 10px; align-items: center; }
+.callout .big::before { content: ""; width: 12px; height: 12px; border-radius: 2px; background: var(--pc); flex: none; }
+.callout p { color: var(--muted); font-size: 14px; }
+.cands { display: grid; gap: 12px; }
+.cand { display: grid; gap: 4px; }
+.cand .top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.cand .top .who { min-width: 0; }
+.cand .top .who b { font-weight: 600; }
+.cand .top .who small { color: var(--muted); }
+.cand .bar { position: relative; height: 10px; background: var(--track); }
+.cand .bar .f { position: absolute; inset: 0 auto 0 0; }
+.cand .bar .fs { position: absolute; top: 0; bottom: 0; opacity: .4; }
+.cand .bar .pv { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--fg); }
+.dsec { display: grid; gap: 10px; }
+.pvlist { display: grid; gap: 7px; }
+.pvrow { display: grid; grid-template-columns: 64px minmax(0, 1fr) 76px; gap: 10px; align-items: center; font-size: 13px; font-variant-numeric: tabular-nums; }
+.pvrow .bar { height: 8px; background: var(--track); position: relative; }
+.pvrow .bar div { position: absolute; inset: 0 auto 0 0; }
+.pvrow .dl { font-size: 11px; color: var(--muted); }
+.leanlist { display: grid; gap: 6px; }
+.splitlist { display: grid; gap: 5px; font-size: 13px; }
+.srow { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.srow .num { color: var(--muted); }
+.srow .rng, .firm { color: var(--faint); font-size: 12px; }
+.callout .range { font-size: 12.5px; color: var(--muted); }
+.tossup { color: var(--warn); font-weight: 700; }
+.lrow { display: grid; grid-template-columns: 74px 58px 58px minmax(0, 1fr) 44px; gap: 10px; align-items: center; font-size: 13px; font-variant-numeric: tabular-nums; }
+.lrow.lhead { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; border-bottom: 1px solid var(--fg); padding-bottom: 4px; }
+.lrow .r { text-align: right; }
+.lrow .lname { display: flex; gap: 6px; align-items: center; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lrow .lbar { position: relative; height: 10px; background: linear-gradient(var(--line), var(--line)) center / 1px 100% no-repeat; }
+.lrow .lbar i { position: absolute; top: 1px; bottom: 1px; }
+.lrow .strong { font-weight: 700; }
+@media (max-width: 480px) { .lrow { grid-template-columns: 58px 46px 46px minmax(0, 1fr) 38px; gap: 6px; } }
+
+/* Tooltip */
+.tip {
+  position: absolute; pointer-events: none; background: var(--raised); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 8px 10px; font-size: 12.5px; box-shadow: 0 6px 18px rgba(0,0,0,.12); min-width: 160px; z-index: 2;
+}
+.tip .h { font-weight: 600; margin-bottom: 4px; }
+.tip .h small { color: var(--muted); font-weight: 400; }
+
+footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); display: grid; gap: 6px; }
+
+/* Motion */
+@keyframes growX { from { transform: scaleX(0); } }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+.intro #vbody .vbar .f { transform-origin: left; animation: growX .8s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 70ms + 200ms); }
+.intro #vbody tr { animation: rise .5s ease both; animation-delay: calc(var(--i, 0) * 50ms + 100ms); }
+.tile { animation: rise .35s ease both; animation-delay: calc(var(--i, 0) * 16ms); }
+.cand .bar .f, .cand .bar .fs, .pvrow .bar div, .lrow .lbar i { transform-origin: left; animation: growX .6s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 45ms + 120ms); }
+.lrow .lbar i[style*="right"] { transform-origin: right; }
+.cand .bar .fs { animation-delay: calc(var(--i, 0) * 45ms + 520ms); }
+.chips .chip { transition: border-color .2s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
+<header class="mast wrap">
+  <div class="mast-top">
+    <h1>2026 General Election</h1>
+  </div>
+  <div class="countbar">
+    <div class="track"><div class="fill" id="countFill" style="width:0"></div></div>
+    <div class="facts" id="facts"></div>
+  </div>
+  <div class="mast-foot">
+    <div class="refresh"><span id="refreshText">Checks for new results every 5 minutes</span><button class="linkbtn" id="refreshNow">Check now</button></div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Views">
+  <div class="wrap">
+    <a href="#parliament" id="tab-parliament">Parliament</a>
+    <a href="#electorates" id="tab-electorates">Electorates</a>
+  </div>
+</nav>
+
+<main class="wrap">
+  <section class="view" id="view-parliament">
+    <div class="block">
+      <div class="simbadge" id="simBadge" hidden><span>With projected specials</span><button class="linkbtn" id="simOff">Show election night</button></div>
+      <div class="parl">
+        <div class="chamber">
+          <div class="tug">
+            <div class="tug-head">
+              <div class="side a">
+                <input id="nameA" aria-label="Name of first bloc" value="Centre-left">
+                <span class="score num" id="scoreA">0</span>
+              </div>
+              <div class="mid"><span class="num" id="majNeed">66</span> to govern<br><span id="houseSize"></span></div>
+              <div class="side b">
+                <input id="nameB" aria-label="Name of second bloc" value="Centre-right">
+                <span class="score num" id="scoreB">0</span>
+              </div>
+            </div>
+            <div class="tug-wrap">
+              <div class="tug-bar" id="tugBar"></div>
+              <div class="tug-line" title="Majority line"></div>
+            </div>
+            <div class="chips" id="prows" aria-label="Parties by bloc. Select a party to move it."></div>
+            <button class="linkbtn chipreset" id="presetBlocs">Reset blocs</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block" id="sim" hidden>
+      <div class="bhead">
+        <h2>Special votes</h2>
+        <button class="btn" id="simApply" aria-pressed="false">Apply special votes projection</button>
+      </div>
+      <div class="simctl">
+        <label for="simVol">Special votes</label>
+        <input type="range" id="simVol" min="0" max="900000" step="5000" value="400000">
+        <span class="simout" id="simVolOut"></span>
+        <label for="simSkew">Lean vs 2023</label>
+        <input type="range" id="simSkew" min="0" max="200" step="10" value="100">
+        <span class="simout" id="simSkewOut"></span>
+        <span></span><span></span><button class="linkbtn" id="simReset" style="justify-self:start;font-size:13px">Reset</button>
+      </div>
+      <div class="simgrid">
+        <div class="scroll-x">
+          <table class="vtable simt">
+            <thead><tr><th>Party</th><th class="r">Tonight %</th><th class="r">Projected %</th><th class="r">Change</th><th class="r hide-sm">Specials</th><th class="r">Seats</th><th class="r">Projected</th><th class="r"></th></tr></thead>
+            <tbody id="simBody"></tbody>
+          </table>
+        </div>
+        <div class="simnotes" id="simNotes"></div>
+      </div>
+      <details class="method">
+        <summary>How the projection works</summary>
+        <ul>
+          <li>Volume: Commission estimate less expected disallowed votes.</li>
+          <li>Split: each area's 2023 special-vote lean, scaled by the slider.</li>
+          <li>Candidates: each party's specials follow how its voters split their candidate vote, estimated from that electorate's voting places. Seats re-run under MMP.</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="block">
+      <h2>Party vote</h2>
+      <div class="closest" id="closest"></div>
+      <div class="scroll-x">
+        <table class="vtable">
+          <thead><tr><th>Party</th><th class="r hide-sm">Votes</th><th class="r">%</th><th class="barcell hide-sm"></th><th class="r hide-sm">Elect.</th><th class="r hide-sm">List</th><th class="r">Seats</th><th class="r" title="Electorate seats won beyond the party's party-vote entitlement"><span class="wide">Overhang</span><span class="short">Over.</span></th><th class="mcell"><span class="wide">Seat margin <span class="thint">(pts)</span></span><span class="short">Margin</span></th></tr></thead>
+          <tbody id="vbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-electorates" hidden>
+    <div class="block">
+      <div class="esim" id="eSimBar" hidden>
+        <span id="eSimText"></span>
+        <button class="btn" id="eSimToggle" aria-pressed="false">Apply special votes projection</button>
+      </div>
+      <div class="leadstrip">
+        <div class="label">Electorates by leading party</div>
+        <div class="bar" id="leadBar"></div>
+        <div class="legend" id="leadLegend"></div>
+      </div>
+      <div class="etools">
+        <input type="search" id="esearch" placeholder="Search electorate or candidate" aria-label="Search electorates">
+        <select id="etype" aria-label="Electorate type">
+          <option value="all">All 71 electorates</option>
+          <option value="general">General electorates</option>
+          <option value="maori">Māori electorates</option>
+        </select>
+        <select id="eparty" aria-label="Leading party"><option value="">Any leading party</option></select>
+        <select id="esort" aria-label="Sort">
+          <option value="close">Closest races first</option>
+          <option value="name">A to Z</option>
+          <option value="counted">Least counted first</option>
+          <option value="safe">Safest seats first</option>
+        </select>
+      </div>
+      <div class="egrid" id="egrid"></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="wrap">
+  <footer>
+    <div>Data: Electoral Commission, 2026 feed and 2023 archive.</div>
+  </footer>
+</div>
+
+<dialog class="detail" id="detail" aria-labelledby="dTitle"><div class="dwrap" id="dbody"></div></dialog>
+
+<script>
+let DATA = /*__DATA__*/null;
+const STATIC = /*__STATIC__*/false; // true in the published static build: no live refresh
+const REFRESH_MS = 5 * 60 * 1000;
+
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const fmt = n => n.toLocaleString("en-NZ");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const KNOWN = ["NAT","LAB","GP","ACT","NZF","TPMAO","OPP","NC","ALCP","OFP","AJP","NZLP"];
+const SHORT = { TPMAO: "Te Pāti Māori", GP: "Green", NAT: "National", LAB: "Labour", NZF: "NZ First", OPP: "Opportunity", NC: "Conservative", ALCP: "Legalise Cannabis" };
+const SPECTRUM = ["TPMAO","GP","LAB","AJP","ALCP","OPP","NZF","NAT","ACT","NC","OFP"];
+const DEFAULT_BLOCS = { TPMAO: "A", GP: "A", LAB: "A", NAT: "B", ACT: "B", NZF: "B" };
+
+const pc = p => p && KNOWN.includes(p.abbrev) ? `var(--p-${p.abbrev})` : "var(--p-other)";
+const pname = p => p ? (SHORT[p.abbrev] || p.short || p.name || p.abbrev) : "Independent";
+const pabbr = p => p ? (p.abbrev === "TPMAO" ? "TPM" : p.abbrev) : "IND";
+const person = raw => {
+  const [sur, first = ""] = String(raw).split(",").map(s => s.trim());
+  const tc = s => s.toLocaleLowerCase("en-NZ").replace(/(^|[\s\-'’(])(\p{L})/gu, (m, a, b) => a + b.toLocaleUpperCase("en-NZ"))
+    .replace(/\bMc(\p{Ll})/gu, (m, b) => "Mc" + b.toLocaleUpperCase("en-NZ"));
+  return { full: (first ? first + " " : "") + tc(sur), sur: tc(sur) };
+};
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+const when = iso => {
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleString("en-NZ", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+};
+const rank = p => { const i = SPECTRUM.indexOf(p.abbrev); return i < 0 ? 5.5 : i; };
+
+/* ---------- motion ---------- */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const ease = t => 1 - Math.pow(1 - t, 3);
+// Count a number from its last value to the new one
+function tweenNum(el, to, { dur = 600, format = v => fmt(Math.round(v)), from } = {}) {
+  if (!el) return;
+  const start = from != null ? from : (el.dataset.v != null ? +el.dataset.v : to);
+  el.dataset.v = to;
+  if (REDUCED || start === to) { el.textContent = format(to); return; }
+  const t0 = performance.now(), id = (el._tw = (el._tw || 0) + 1);
+  const step = now => {
+    if (el._tw !== id) return;
+    const k = Math.min(1, (now - t0) / dur);
+    el.textContent = format(start + (to - start) * ease(k));
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+// Slide elements (keyed by data-key) from where they were to where they are now
+function flip(container, sel, render, attr) {
+  const before = new Map();
+  if (!REDUCED) container.querySelectorAll(sel).forEach(el => before.set(el.dataset[attr], el.getBoundingClientRect()));
+  render();
+  if (REDUCED) return;
+  container.querySelectorAll(sel).forEach(el => {
+    const b = before.get(el.dataset[attr]); if (!b) return;
+    const a = el.getBoundingClientRect(), dx = b.left - a.left, dy = b.top - a.top;
+    if (Math.abs(dx) + Math.abs(dy) < 1) return;
+    el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], { duration: 380, easing: "cubic-bezier(.2,.8,.2,1)" });
+  });
+}
+
+/* ---------- state derived from DATA ---------- */
+let parties = {}, seated = [], TOTAL = 0, MAJ = 0, E = [], circles = [];
+let blocs = store.get("nzev-blocs", {});
+let focus = null;
+
+function derive(d, override) {
+  parties = {};
+  (override || d.parties).forEach(p => parties[p.id] = p);
+  seated = (override || d.parties).filter(p => p.seats > 0).sort((a, b) => rank(a) - rank(b));
+  TOTAL = seated.reduce((a, p) => a + p.seats, 0);
+  MAJ = Math.floor(TOTAL / 2) + 1;
+  seated.forEach(p => { if (!(p.id in blocs)) blocs[p.id] = DEFAULT_BLOCS[p.abbrev] || ""; });
+  if (focus && !parties[focus]?.seats) focus = null;
+  E = d.electorates.map(e => {
+    const sim = SIM.on && SIM.result && SIM.result.byE ? SIM.result.byE[e.id] : null;
+    const cands = sim && sim.cands ? sim.cands.map(c => ({ ...c, votes: Math.round(c.proj) })) : e.candidates;
+    const pvotes = sim ? Object.fromEntries(Object.entries(sim.party).map(([k, v]) => [k, Math.round(v.proj)])) : e.partyVotes;
+    const [w, r] = cands;
+    const tot = cands.reduce((a, c) => a + c.votes, 0);
+    return { ...e, candidates: cands, partyVotes: pvotes, partyVotesNow: e.partyVotes, sim, lead: w, second: r, candTotal: tot,
+      margin: w ? w.votes - (r ? r.votes : 0) : 0,
+      marginPct: w && tot ? (w.votes - (r ? r.votes : 0)) / tot * 100 : 0 };
+  });
+}
+
+/* ---------- header ---------- */
+function renderHeader() {
+  const S = DATA.stats;
+  const isFinal = S.pctPlaces >= 100;
+  $("#countFill").style.width = S.pctPlaces + "%";
+  const first = !$("#facts").dataset.done;
+  $("#facts").dataset.done = 1;
+  $("#facts").innerHTML = isFinal
+    ? `<span><b class="num" id="fVotes"></b> votes</span><span><b class="num" id="fTurn"></b> turnout</span>`
+    : `<span><b class="num">${S.pctPlaces}%</b> counted</span><span><b class="num" id="fVotes"></b> votes</span>`;
+  tweenNum($("#fVotes"), S.votesCast, { from: first ? 0 : S.votesCast, dur: 900 });
+  if (isFinal) tweenNum($("#fTurn"), EC_TURNOUT, { from: first ? 0 : EC_TURNOUT, dur: 900, format: v => v.toFixed(1) + "%" });
+}
+
+/* ---------- parliament ---------- */
+function orderedParties() {
+  const g = k => seated.filter(p => (blocs[p.id] || "") === k);
+  return [...g("A"), ...g(""), ...g("B").reverse()];
+}
+
+function renderTug() {
+  const sum = k => seated.filter(p => blocs[p.id] === k).reduce((a, p) => a + p.seats, 0);
+  const a = sum("A"), b = sum("B");
+  tweenNum($("#scoreA"), a, { from: $("#scoreA").dataset.v == null ? 0 : undefined });
+  tweenNum($("#scoreB"), b, { from: $("#scoreB").dataset.v == null ? 0 : undefined });
+  $("#majNeed").textContent = MAJ;
+  const segs = k => seated.filter(p => (blocs[p.id] || "") === k);
+  const order = [...segs("A").map(p => [p, false]), ...segs("").map(p => [p, true]), ...segs("B").reverse().map(p => [p, false])];
+  const bar = $("#tugBar"), have = new Map([...bar.querySelectorAll(".seg")].map(el => [el.dataset.p, el]));
+  const fresh = [];
+  order.forEach(([p, faded]) => {
+    let el = have.get(p.id);
+    if (!el) { el = document.createElement("div"); el.className = "seg"; el.dataset.p = p.id; el.style.flexBasis = "0%"; fresh.push(el); }
+    have.delete(p.id);
+    el.classList.toggle("faded", faded);
+    el.style.background = pc(p);
+    el.title = `${pname(p)}: ${p.seats} seats (${p.elect} electorate, ${p.list} list)${faded ? ", unaligned" : ""}`;
+    el.dataset.basis = (p.seats / TOTAL * 100).toFixed(3) + "%";
+    bar.appendChild(el);
+  });
+  have.forEach(el => el.remove());
+  const apply = () => bar.querySelectorAll(".seg").forEach(el => el.style.flexBasis = el.dataset.basis);
+  if (fresh.length && !REDUCED) requestAnimationFrame(() => requestAnimationFrame(apply)); else apply();
+  $("#houseSize").textContent = `${TOTAL} seats${TOTAL > 120 ? ` · ${TOTAL - 120} overhang` : ""}`;
+  const nA = $("#nameA").value || "First bloc", nB = $("#nameB").value || "Second bloc";
+}
+
+function renderRows() {
+  const nA = $("#nameA").value || "Bloc A", nB = $("#nameB").value || "Bloc B";
+  const label = { A: nA, "": "neither bloc", B: nB };
+  const chip = p => {
+    const B = blocs[p.id] || "";
+    return `<button class="chip" data-p="${p.id}" title="Move ${esc(pname(p))}" aria-label="${esc(pname(p))}, ${p.seats} seats, in ${esc(label[B])}. Select to move.">
+      <span class="sw" style="background:${pc(p)}"></span>${esc(pabbr(p))}<span class="num">${p.seats}</span></button>`;
+  };
+  const zone = k => seated.filter(p => (blocs[p.id] || "") === k);
+  flip($("#prows"), ".chip", () => {
+    $("#prows").innerHTML =
+      `<div class="zone a">${zone("A").map(chip).join("")}</div>` +
+      `<div class="zone n">${zone("").map(chip).join("")}</div>` +
+      `<div class="zone b">${zone("B").reverse().map(chip).join("")}</div>`;
+  }, "p");
+}
+
+function renderAllParl() { renderRows(); renderTug(); }
+
+function renderVotes() {
+  const list = DATA.parties.filter(p => p.votes > 0).sort((a, b) => b.votes - a.votes);
+  const base = mmpBase(list);
+  const max = Math.max(...list.map(p => p.pct)) * 1.05;
+  $("#vbody").innerHTML = list.filter(p => p.seats > 0).map((p, i) => {
+    const out = p.seats === 0;
+    return `<tr class="${out ? "below" : ""}" style="--i:${i}">
+      <td><div class="pn"><span class="sw" style="background:${pc(p)}"></span><span title="${esc(p.name)}">${esc(pname(p))}</span></div></td>
+      <td class="r num hide-sm">${fmt(p.votes)}</td>
+      <td class="r num">${p.pct.toFixed(2)}</td>
+      <td class="barcell hide-sm"><div class="vbar"><div class="f" style="width:${(p.pct / max * 100).toFixed(2)}%;background:${pc(p)}"></div></div></td>
+      <td class="r num hide-sm">${p.elect || ""}</td>
+      <td class="r num hide-sm">${p.list || ""}</td>
+      <td class="r num"><b>${p.seats || ""}</b></td>
+      <td class="r num">${overhangCell(p, base)}</td>
+      <td class="mcell">${marginCell(p, base)}</td>
+    </tr>`;
+  }).join("");
+  renderClosest(list, base);
+}
+
+/* ---------- MMP seat margins ---------- */
+// NZ MMP: parties with 5% of the party vote or at least one electorate share 120 seats by Sainte-Laguë.
+// A party that wins more electorates than its share keeps them as overhang and the House grows.
+const MMP_SEATS = 120, MMP_THRESHOLD = 5;
+function mmpAllocate(votes, elect, total, nSeats = MMP_SEATS) {
+  const q = Object.keys(votes).filter(id => votes[id] > 0 && (votes[id] / total * 100 >= MMP_THRESHOLD || (elect[id] || 0) >= 1));
+  const alloc = Object.fromEntries(q.map(id => [id, 0]));
+  for (let n = 0; n < nSeats && q.length; n++) {
+    let best = null, bq = -1;
+    for (const id of q) { const v = votes[id] / (2 * alloc[id] + 1); if (v > bq) { bq = v; best = id; } }
+    alloc[best]++;
+  }
+  const seats = {};
+  for (const id of Object.keys(votes)) seats[id] = Math.max(alloc[id] || 0, elect[id] || 0);
+  Object.defineProperty(seats, "alloc", { value: alloc }); // party-vote entitlement, before overhang
+  return seats;
+}
+// Seats for party `id` if its share moved by x points and every other party's share scaled to fill the rest.
+function mmpSeatsAt(id, x, base) {
+  const { votes, elect, total, share } = base;
+  const s = Math.min(100, Math.max(0, share[id] + x));
+  const k = (100 - s) / (100 - share[id] || 1);
+  const v = {};
+  for (const j of Object.keys(votes)) v[j] = j === id ? s / 100 * total : votes[j] * k;
+  return mmpAllocate(v, elect, total, base.nSeats)[id];
+}
+function mmpBase(parties) {
+  const votes = {}, elect = {}, share = {};
+  let total = 0;
+  parties.forEach(p => { votes[p.id] = p.votes; elect[p.id] = p.elect; total += p.votes; });
+  parties.forEach(p => share[p.id] = total ? p.votes / total * 100 : 0);
+  // an electorate led by a candidate without a party list (independent) takes one seat out of the 120
+  const indep = DATA.electorates.filter(e => e.candidates[0] && e.candidates[0].votes > 0 && !(votes[e.candidates[0].party] > 0)).length;
+  const nSeats = MMP_SEATS - indep;
+  return { votes, elect, total, share, nSeats, seats: total ? mmpAllocate(votes, elect, total, nSeats) : {} };
+}
+// Smallest move (in points) that changes the party's seat count, searched to 0.005 pts.
+function mmpMargin(id, dir, base) {
+  const now = base.seats[id] || 0, room = dir > 0 ? Math.min(25, 100 - base.share[id]) : base.share[id];
+  const changed = x => (mmpSeatsAt(id, dir * x, base) || 0) !== now;
+  if (room <= 0 || !changed(room)) return null;
+  let lo = 0, hi = room;
+  while (hi - lo > 0.005) { const mid = (lo + hi) / 2; if (changed(mid)) hi = mid; else lo = mid; }
+  return { pts: hi, seats: mmpSeatsAt(id, dir * hi, base) };
+}
+
+function overhangCell(p, base) {
+  const ent = (base.seats.alloc || {})[p.id] || 0, over = (base.seats[p.id] || 0) - ent;
+  if (over <= 0) return "";
+  return `<span class="over" title="${p.elect} electorates vs ${ent}-seat entitlement">+${over}</span>`;
+}
+const ord = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
+function marginCell(p, base) {
+  const qualifies = p.pct >= MMP_THRESHOLD || p.elect >= 1;
+  if (!qualifies) {
+    if (p.pct < 1) return `<span class="mnone">–</span>`;
+    const g = mmpMargin(p.id, 1, base);
+    return `<span class="mfar" title="${esc(pname(p))} needs ${(MMP_THRESHOLD - p.pct).toFixed(2)} more points to reach 5%${g ? `, which would bring ${g.seats} seats` : ""}">${(MMP_THRESHOLD - p.pct).toFixed(2)} to 5%</span>`;
+  }
+  const g = mmpMargin(p.id, 1, base), l = mmpMargin(p.id, -1, base);
+  const now = p.seats, nm = esc(pname(p));
+  const title = [g ? `${g.seats} seats at ${(p.pct + g.pts).toFixed(2)}%` : "", l ? `${l.seats} at ${(p.pct - l.pts).toFixed(2)}%` : `can't fall below ${now}`].filter(Boolean).join(" · ");
+  // gauge: where the share sits between the lose and gain points
+  const lp = l ? l.pts : null, gp = g ? g.pts : null;
+  const pos = lp == null ? 0 : gp == null ? 1 : lp / (lp + gp);
+  const near = lp != null && (gp == null || lp < gp) ? "l" : "g";
+  const W = 64;
+  return `<span class="margin" title="${title}">
+    <span class="m l ${near === "l" ? "near" : ""}">${lp == null ? "–" : "−" + lp.toFixed(2)}</span>
+    <svg width="${W}" height="14" viewBox="0 0 ${W} 14" aria-hidden="true">
+      <line x1="2" x2="${W - 2}" y1="7" y2="7" stroke="var(--line)" stroke-width="4" stroke-linecap="round"></line>
+      <line x1="2" x2="2" y1="2" y2="12" stroke="var(--faint)" stroke-width="1.5"></line>
+      <line x1="${W - 2}" x2="${W - 2}" y1="2" y2="12" stroke="var(--faint)" stroke-width="1.5"></line>
+      <circle cx="${(2 + pos * (W - 4)).toFixed(1)}" cy="7" r="4.5" fill="${pc(p)}" stroke="var(--surface)" stroke-width="1.5"></circle>
+    </svg>
+    <span class="m g ${near === "g" ? "near" : ""}">${gp == null ? "–" : "+" + gp.toFixed(2)}</span>
+  </span>`;
+}
+function renderClosest(list, base) {
+  const calls = [];
+  list.filter(p => p.pct >= MMP_THRESHOLD || p.elect >= 1).forEach(p => {
+    const g = mmpMargin(p.id, 1, base), l = mmpMargin(p.id, -1, base);
+    if (g) calls.push({ p, pts: g.pts, seats: g.seats, dir: "+" });
+    if (l) calls.push({ p, pts: l.pts, seats: l.seats, dir: "−" });
+  });
+  calls.sort((a, b) => a.pts - b.pts);
+  $("#closest").innerHTML = calls.length ? `<span class="label">Closest seat calls</span>` + calls.slice(0, 4).map(c =>
+    `<span class="call"><span class="sw" style="background:${pc(c.p)}"></span><b>${esc(pname(c.p))}</b> <span class="num">${c.dir}${c.pts.toFixed(2)} → ${c.seats} seats</span></span>`).join("") : "";
+}
+
+/* ---------- electorates ---------- */
+function renderLeadStrip() {
+  const counts = {};
+  E.forEach(e => { if (e.lead && e.lead.votes) counts[e.lead.party] = (counts[e.lead.party] || 0) + 1; });
+  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  $("#leadBar").innerHTML = rows.map(([pid, n]) => {
+    const p = parties[pid];
+    return `<div style="flex:${n};background:${pc(p)}" title="${esc(pname(p))}: ${n}">${n >= 4 ? n : ""}</div>`;
+  }).join("");
+  $("#leadLegend").innerHTML = rows.map(([pid, n]) => {
+    const p = parties[pid];
+    return `<span style="display:inline-flex;gap:6px;align-items:center"><span class="sw" style="background:${pc(p)}"></span>${esc(pname(p))} <span class="num">${n}</span></span>`;
+  }).join("");
+  const sel = $("#eparty"), keep = sel.value;
+  sel.innerHTML = `<option value="">Any leading party</option>` +
+    rows.map(([pid]) => `<option value="${pid}">${esc(pname(parties[pid]))} leading</option>`).join("");
+  sel.value = rows.some(([pid]) => pid === keep) ? keep : "";
+}
+
+const ring = pct => {
+  const r = 9, c = 2 * Math.PI * r, off = c * (1 - pct / 100);
+  return `<svg class="ring" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="${r}" fill="none" stroke="var(--track)" stroke-width="3"></circle>
+    <circle cx="12" cy="12" r="${r}" fill="none" stroke="var(--fg)" stroke-width="3" stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" transform="rotate(-90 12 12)" stroke-linecap="round"></circle></svg>`;
+};
+
+function renderGrid() {
+  const q = $("#esearch").value.trim().toLocaleLowerCase("en-NZ");
+  const type = $("#etype").value, party = $("#eparty").value, sort = $("#esort").value;
+  const list = E.filter(e =>
+    (type === "all" || (type === "maori") === e.maori) &&
+    (!party || (e.lead && e.lead.party === party)) &&
+    (!q || e.name.toLocaleLowerCase("en-NZ").includes(q) || e.candidates.some(c => person(c.name).full.toLocaleLowerCase("en-NZ").includes(q)))
+  );
+  list.sort({
+    close: (a, b) => a.marginPct - b.marginPct,
+    safe: (a, b) => b.marginPct - a.marginPct,
+    name: (a, b) => a.name.localeCompare(b.name, "en-NZ"),
+    counted: (a, b) => a.pctCounted - b.pctCounted
+  }[sort]);
+  if (!list.length) { $("#egrid").innerHTML = `<div class="empty">No electorates match. Clear the search or filters.</div>`; return; }
+  $("#egrid").innerHTML = list.map((e, i) => {
+    const lp = e.lead ? parties[e.lead.party] : null, sp = e.second ? parties[e.second.party] : null;
+    const col = pc(lp);
+    const lw = e.candTotal ? e.lead.votes / e.candTotal * 100 : 0;
+    const sw = e.candTotal && e.second ? e.second.votes / e.candTotal * 100 : 0;
+    return `<button class="tile" style="--pc:${col};--i:${Math.min(i, 24)}" data-e="${e.id}">
+      ${(() => { const bits = [e.maori ? "Māori" : "", e.sim && e.sim.flip ? `<span class="flipchip">Flips</span>` : "", e.sim && e.sim.fits && e.sim.holds < 0.8 ? `<span class="tossup">Toss-up</span>` : ""].filter(Boolean); return `<div>${bits.length ? `<div class="tag">${bits.join(" · ")}</div>` : ""}`; })()}
+      <div class="tname">${esc(e.name)}</div></div>
+      <div class="tlead"><span class="sw" style="background:${col}"></span><span><b>${esc(e.lead ? person(e.lead.name).sur : "No votes yet")}</b> ${e.lead ? esc(pabbr(lp)) + " leads" : ""}</span></div>
+      <div class="tmargin"><div style="width:${lw}%;background:${col}"></div><div style="width:${sw}%;background:${pc(sp)};opacity:.55"></div></div>
+      <div class="tmeta"><span class="${e.marginPct < 5 ? "close-race" : ""}">${e.lead ? "+" + fmt(e.margin) + " over " + esc(pabbr(sp)) : ""}</span><span class="num">${e.sim ? `+${fmt(Math.round(e.sim.S / 100) * 100)} specials` : e.pctCounted < 100 ? e.pctCounted + "% counted" : ""}</span></div>
+    </button>`;
+  }).join("");
+}
+
+/* ---------- detail ---------- */
+const dlg = $("#detail");
+let openId = null;
+function openDetail(id) {
+  const e = E.find(x => x.id === id); if (!e) return;
+  openId = id;
+  const lp = e.lead ? parties[e.lead.party] : null, sp = e.second ? parties[e.second.party] : null;
+  const sim = e.sim;
+  const pvTotal = Object.values(e.partyVotes).reduce((a, b) => a + b, 0) || 1;
+  const nowTotal = Object.values(e.partyVotesNow).reduce((a, b) => a + b, 0) || 1;
+  const maxC = Math.max(1, ...e.candidates.map(c => c.votes), ...e.candidates.map(c => e.partyVotes[c.party] || 0));
+  const cands = e.candidates.map((c, ci) => {
+    const p = parties[c.party], pv = e.partyVotes[c.party] || 0, nm = person(c.name);
+    const counted = sim ? c.counted : c.votes, added = c.votes - counted;
+    return `<div class="cand" style="--i:${ci}">
+      <div class="top"><span class="who"><b>${esc(nm.full)}</b> <small>${esc(pname(p))}${c.list ? " · list #" + c.list : ""}</small></span>
+      <span class="num">${fmt(c.votes)}${sim ? ` <small style="color:var(--muted)">(+${fmt(Math.round(added))})</small>` : ""} <small style="color:var(--muted)">${e.candTotal ? (c.votes / e.candTotal * 100).toFixed(1) : 0}%</small></span></div>
+      <div class="bar"><div class="f" style="width:${(counted / maxC * 100).toFixed(2)}%;background:${pc(p)}"></div>${sim ? `<div class="fs" style="left:${(counted / maxC * 100).toFixed(2)}%;width:${(added / maxC * 100).toFixed(2)}%;background:${pc(p)}"></div>` : ""}${p && pv ? `<div class="pv" style="left:${(pv / maxC * 100).toFixed(2)}%" title="${esc(pname(p))} party vote here: ${fmt(pv)}"></div>` : ""}</div>
+    </div>`;
+  }).join("");
+  const pvRows = Object.entries(e.partyVotes).sort((a, b) => b[1] - a[1]).filter(([, v]) => v / pvTotal >= 0.005);
+  const pvMax = pvRows.length ? pvRows[0][1] : 1;
+  const pvHTML = pvRows.map(([pid, v]) => {
+    const p = parties[pid], share = v / pvTotal * 100, dlt = share - (e.partyVotesNow[pid] || 0) / nowTotal * 100;
+    return `<div class="pvrow"><span>${esc(pabbr(p))}</span><div class="bar"><div style="width:${(v / pvMax * 100).toFixed(2)}%;background:${pc(p)}"></div></div><span class="num" style="text-align:right">${share.toFixed(1)}%${sim && Math.abs(dlt) >= 0.05 ? ` <span class="dl">${dlt > 0 ? "+" : "−"}${Math.abs(dlt).toFixed(1)}</span>` : ""}</span></div>`;
+  }).join("");
+  const was = sim && sim.flip ? sim.from : null;
+  const status = was ? `Projected flip from ${person(was.name).full} (${pabbr(parties[was.party])})` : e.pctCounted < 100 ? "Leading" : "";
+  const simInfo = sim ? `<div class="simbadge"><span>+${fmt(Math.round(sim.S / 100) * 100)} projected specials</span><button class="linkbtn" id="dSimOff">Show election night</button></div>` : "";
+  const tr = DATA.transfer && DATA.transfer[e.id];
+  let splitHTML = "";
+  if (tr) {
+    const pvTot = Object.values(e.partyVotesNow).reduce((a, b) => a + b, 0) || 1;
+    const cname = cid => { const c = e.candidates.find(x => x.id === cid); return c ? person(c.name).sur : cid; };
+    const rows = tr.parties.map((pid, j) => ({ pid, share: pid === "other" ? 0 : (e.partyVotesNow[pid] || 0) / pvTot, row: tr.T[j] }))
+      .filter(r => r.pid !== "other" && r.share >= 0.03)
+      .map(r => {
+        const p = parties[r.pid];
+        const j = tr.parties.indexOf(r.pid), S = splitSamples(tr);
+        const tops = r.row.map((v, ci) => [tr.cands[ci], v, ci]).filter(([cid, v]) => cid !== "none" && v >= 0.05).sort((a, b) => b[1] - a[1]).slice(0, 3);
+        const rng = ci => S.length ? ` <span class="rng">(${Math.round(pctile(S.map(T => T[j][ci]), 0.1) * 100)}–${Math.round(pctile(S.map(T => T[j][ci]), 0.9) * 100)})</span>` : "";
+        return `<div class="srow"><span class="lname"><span class="sw" style="background:${pc(p)}"></span>${esc(pabbr(p))}</span><span>${tops.map(([cid, v, ci]) => `${esc(cname(cid))} <span class="num">${Math.round(v * 100)}%</span>${rng(ci)}`).join(" · ")}</span></div>`;
+      }).join("");
+    splitHTML = `<div class="dsec"><h3>Estimated candidate vote split by party vote</h3><p class="note">Estimated from ${tr.places} voting places. Projected specials follow these splits.</p><div class="splitlist">${rows}</div></div>`;
+  }
+  const L23 = DATA.sp23 ? lean2023(e) : null;
+  let leanHTML = "";
+  if (L23 && L23.rows.length) {
+    const m = Math.max(4, ...L23.rows.map(r => Math.abs(r.diff)));
+    const src = L23.from.slice(0, 3).map(([nm, f]) => `${esc(nm)}${f < 0.995 ? " (" + Math.round(f * 100) + "%)" : ""}`).join(", ");
+    leanHTML = `<div class="dsec">
+      <h3>How specials leaned in 2023 (party vote)</h3>
+      <p class="note">${Math.round(L23.rate * 100)} specials per 100 ordinary votes · ${src}</p>
+      <div class="leanlist">
+        <div class="lrow lhead"><span></span><span class="r">Ordinary</span><span class="r">Specials</span><span></span><span class="r">Diff</span></div>
+        ${L23.rows.map(r => `<div class="lrow">
+          <span class="lname"><span class="sw" style="background:${r.color}"></span>${esc(r.label)}</span>
+          <span class="r num">${r.ord.toFixed(1)}</span>
+          <span class="r num">${r.spec.toFixed(1)}</span>
+          <span class="lbar"><i style="${r.diff >= 0 ? "left:50%" : `right:50%`};width:${(Math.abs(r.diff) / m * 50).toFixed(2)}%;background:${r.color}"></i></span>
+          <span class="r num ${Math.abs(r.diff) >= 1 ? "strong" : ""}">${r.diff >= 0.05 ? "+" : r.diff <= -0.05 ? "−" : ""}${Math.abs(r.diff).toFixed(1)}</span>
+        </div>`).join("")}
+      </div>
+    </div>`;
+  }
+  const fromTxt = sim ? sim.prof.from.slice(0, 3).map(([n, f]) => `${esc(n)}${f < 0.995 ? " (" + Math.round(f * 100) + "%)" : ""}`).join(", ") : "";
+  const runner = e.second ? person(e.second.name).full : "";
+  $("#dbody").innerHTML = `
+    <div class="dhead">
+      <div>${e.maori ? `<div class="tag">Māori electorate</div>` : ""}
+      <h2 id="dTitle">${esc(e.name)}</h2></div>
+      <button class="xbtn" id="dclose" aria-label="Close">×</button>
+    </div>
+    ${simInfo}
+    ${e.lead ? `<div class="callout" style="--pc:${pc(lp)}">
+      ${status ? `<div class="label">${status}</div>` : ""}
+      <div class="big">${esc(person(e.lead.name).full)}, ${esc(pname(lp))}</div>
+      ${sim && sim.fits ? `<p class="range">Range ${sim.range[0] < 0 ? "−" : "+"}${fmt(Math.abs(Math.round(sim.range[0])))} to ${sim.range[1] < 0 ? "−" : "+"}${fmt(Math.abs(Math.round(sim.range[1])))} · ahead in ${Math.round(sim.holds * sim.fits)} of ${sim.fits} fits</p>` : ""}
+      <p>${runner ? `Ahead of ${esc(runner)} (${esc(pname(sp))}) by <b class="num">${fmt(e.margin)}</b> votes, ${e.marginPct.toFixed(1)} points.` : "Only candidate with votes counted."}</p>
+    </div>` : ""}
+    <div class="dstats">
+      <div><b class="num">${fmt(e.margin)}</b><small>margin</small></div>
+      <div><b class="num">${fmt(e.cast)}</b><small>votes cast</small></div>
+      ${sim ? `<div><b class="num">~${fmt(Math.round(sim.S / 100) * 100)}</b><small>projected specials</small></div>` : `<div><b class="num">${fmt(e.candInformal + e.partyInformal)}</b><small>informal votes</small></div>`}
+    </div>
+    ${sim ? `<p class="note">Based on 2023 ${fromTxt}.</p>` : ""}
+    <div class="dsec">
+      <h3>Candidate vote</h3>
+      <p class="note">Tick: party vote</p>
+      <div class="cands">${cands}</div>
+    </div>
+    ${splitHTML}
+    <div class="dsec">
+      <h3>Party vote in ${esc(e.name)}</h3>
+      <div class="pvlist">${pvHTML}</div>
+    </div>
+    ${leanHTML}`;
+  $("#dclose").onclick = () => dlg.close();
+  const off = $("#dSimOff"); if (off) off.onclick = () => { SIM.on = false; refreshParl(); };
+  if (!dlg.open) dlg.showModal();
+}
+dlg.addEventListener("close", () => { openId = null; if (/^#e\d+$/.test(location.hash)) { history.replaceState(null, "", "#electorates"); route(); } });
+dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+
+/* ---------- special votes simulation ---------- */
+// Model, per 2026 electorate:
+//  1. Finish the ordinary count. General electorates: the voting places located there that haven't reported
+//     yet, sized by their 2023 votes × the 2026/2023 turnout ratio at places that have. Māori electorates
+//     (no located places): scale by results still outstanding. Outstanding ordinary votes split like the
+//     votes already counted there.
+//  2. Find the 2023 profile. A blend of the 2023 electorates its voting places sat in, weighted by 2023 votes
+//     at those places (2025 boundary changes), when at least 60% of its places match a 2023 place; otherwise
+//     the same-named 2023 electorate; otherwise the national profile. Māori electorates use the same name.
+//  3. Specials are shared out in proportion to finished ordinary votes × the profile's 2023 specials-to-ordinary
+//     ratio, scaled so the national total equals the chosen volume.
+//  4. Party lean = 2023 special share ÷ 2023 ordinary share in that profile, shrunk towards the party's
+//     average lean when it had few votes there, raised to the lean setting, then normalised.
+//  5. Candidate specials use the 2023 candidate-to-party specials ratio (party-only specials have no
+//     candidate vote) and the candidate's party lean (2023 candidate files don't list parties).
+// Seats are then re-run through MMP with projected electorate winners. Independent winners take seats
+// out of the 120 before the list allocation.
+const SIM = { on: false, target: null, skew: 1, result: null };
+const SHRINK = 40; // pseudo-count, in expected special votes, pulling small local leans towards the average
+const normName = s => String(s || "").normalize("NFC").toLowerCase().replace(/[’']/g, "").replace(/\(.*?\)/g, "").replace(/[^a-zā-ū0-9 ]/g, " ").replace(/\b(party|the|nz|new zealand|aotearoa)\b/g, " ").replace(/\s+/g, " ").trim();
+const SP_ALIAS = { "The Opportunities Party (TOP)": "OPP", "Te Pāti Māori": "TPMAO", "Green Party": "GP", "Labour Party": "LAB", "National Party": "NAT", "ACT New Zealand": "ACT", "New Zealand First Party": "NZF", "Aotearoa Legalise Cannabis Party": "ALCP", "Animal Justice Party": "AJP" };
+const isListParty = pid => !!(parties[pid] && parties[pid].votes > 0);
+
+let SPM = null; // prepared 2023 model
+function prepSpecials() {
+  const sp = DATA.sp23;
+  if (!sp) return null;
+  const nfc = s => String(s).normalize("NFC");
+  const byAbbrev = {}; DATA.parties.forEach(p => byAbbrev[p.abbrev] = p.id);
+  const byName = {}; DATA.parties.forEach(p => { byName[normName(p.name)] = p.id; byName[normName(p.short)] = p.id; });
+  const col2pid = sp.parties.map(n => SP_ALIAS[nfc(n)] ? byAbbrev[SP_ALIAS[nfc(n)]] : byName[normName(n)]);
+  const n = sp.parties.length;
+  const E = {}; sp.electorates.forEach(x => E[nfc(x.name)] = x);
+  const placeE = {}; Object.entries(sp.placeE || {}).forEach(([id, nm]) => placeE[id] = nfc(nm));
+  const rateOf = x => x.ord[n] ? x.spec[n] / x.ord[n] : 0;
+  // party average lean: weighted by ordinary votes across 2023 electorates, so it reflects how the party's
+  // voters behaved locally rather than where they happen to live
+  const fbNum = new Array(n).fill(0), fbDen = new Array(n).fill(0);
+  sp.electorates.forEach(x => { const r = rateOf(x); if (!r) return; for (let i = 0; i < n; i++) { fbNum[i] += x.spec[i] / r; fbDen[i] += x.ord[i]; } });
+  const kFb = fbNum.map((v, i) => fbDen[i] ? v / fbDen[i] : 1);
+  const totSpec = sp.electorates.reduce((a, x) => a + x.spec[n], 0), totCand = sp.electorates.reduce((a, x) => a + (x.candSpec || 0), 0);
+  const natCandRatio = totSpec ? totCand / totSpec : 0.9;
+  const natRate = sp.electorates.reduce((a, x) => a + x.spec[n], 0) / sp.electorates.reduce((a, x) => a + x.ord[n], 0);
+  const profileOf = x => {
+    const r = rateOf(x);
+    return {
+      rate: r,
+      // shrunk lean: (specials won + SHRINK × average lean) ÷ (specials expected from ordinary share + SHRINK)
+      k: sp.parties.map((_, i) => { const exp = x.ord[i] * r; return (x.spec[i] + SHRINK * kFb[i]) / (exp + SHRINK); }),
+      cand: x.candSpec > 0 ? x.candSpec / x.spec[n] : natCandRatio
+    };
+  };
+  const PROF = {}; Object.entries(E).forEach(([nm, x]) => PROF[nm] = profileOf(x));
+  const national = { rate: natRate, k: kFb, cand: natCandRatio };
+  const blend = parts => ({
+    rate: parts.reduce((a, [nm, f]) => a + f * PROF[nm].rate, 0),
+    k: sp.parties.map((_, i) => parts.reduce((a, [nm, f]) => a + f * PROF[nm].k[i], 0)),
+    cand: parts.reduce((a, [nm, f]) => a + f * PROF[nm].cand, 0)
+  });
+  const profiles = {};
+  for (const e of DATA.electorates) {
+    const located = (DATA.places || []).filter(p => p.e === e.id);
+    const w = {}; let matchedPlaces = 0;
+    located.forEach(p => { const nm = placeE[p.id]; if (p.v23 && nm && PROF[nm]) { w[nm] = (w[nm] || 0) + p.v23[0]; matchedPlaces++; } });
+    const tot = Object.values(w).reduce((a, b) => a + b, 0);
+    const parts = tot ? Object.entries(w).map(([nm, v]) => [nm, v / tot]).sort((a, b) => b[1] - a[1]) : [];
+    const same = E[nfc(e.name)] ? nfc(e.name) : null;
+    let prof, from, how;
+    if (!e.maori && parts.length && matchedPlaces >= 0.6 * located.length) { prof = blend(parts); from = parts; how = "blend"; }
+    else if (same) { prof = PROF[same]; from = [[same, 1]]; how = "same name"; }
+    else if (parts.length) { prof = blend(parts); from = parts; how = "blend"; }
+    else { prof = national; from = [["New Zealand", 1]]; how = "national"; }
+    profiles[e.id] = { ...prof, from, how };
+  }
+  return { col2pid, kFb, profiles, natRate, E, n, names: sp.parties };
+}
+
+// Ordinary votes still to come in each electorate (see step 1)
+function outstandingOrdinary(e, O) {
+  if (!O || !e.counted) return 0;
+  if (e.maori) return e.counted < e.places ? O * Math.min(0.5, (e.places - e.counted) / e.counted) : 0;
+  const located = (DATA.places || []).filter(p => p.e === e.id);
+  const rep = located.filter(p => p.t && p.v23 && p.n), wait = located.filter(p => !p.t && p.v23);
+  const r23 = rep.reduce((a, p) => a + p.v23[0], 0), r26 = rep.reduce((a, p) => a + p.n, 0);
+  const turnout = r23 ? Math.min(2, r26 / r23) : 1;
+  return wait.reduce((a, p) => a + p.v23[0], 0) * turnout;
+}
+
+// Electoral Commission, "2026 General Election preliminary results", 7 Nov 2026 (elections.nz):
+// "approximately 399,365 including 96,947 overseas and dictation votes". The feed's total_special_votes
+// (297,418 at 100% counted) covers specials cast in New Zealand only. The Commission expects about 55,000
+// specials to be disallowed this time because enrolment closed earlier (1News, 16 Oct 2026); the model
+// works with valid votes, so the default subtracts them.
+const EC_SPECIALS = { total: 399365, overseas: 96947, disallowed: 55000 };
+const EC_TURNOUT = 74.6; // Commission's election-night turnout estimate, including estimated specials
+function feedSpecialsEstimate() {
+  const s = DATA.stats || {};
+  if (!s.specials) return null;
+  if ((s.pctPlaces || 0) >= 100) return EC_SPECIALS.total - EC_SPECIALS.disallowed;
+  // during the count: NZ specials so far, grossed up for places not yet in, plus overseas
+  return Math.round(s.specials / Math.max(0.05, s.pctPlaces / 100) + EC_SPECIALS.overseas - EC_SPECIALS.disallowed);
+}
+
+// Bootstrap refits of an electorate's party-to-candidate split, as J x K matrices (cached)
+function splitSamples(tr) {
+  if (!tr || !tr.boot) return [];
+  if (tr._S) return tr._S;
+  const J = tr.parties.length, K = tr.cands.length;
+  return tr._S = tr.boot.map(flat => Array.from({ length: J }, (_, j) => flat.slice(j * K, j * K + K).map(v => v / 1000)));
+}
+const pctile = (arr, q) => { const a = [...arr].sort((x, y) => x - y); if (!a.length) return NaN; const i = (a.length - 1) * q, lo = Math.floor(i); return a[lo] + (a[Math.min(lo + 1, a.length - 1)] - a[lo]) * (i - lo); };
+
+// How 2023 specials leaned in the area behind an electorate's profile (same-name or blended 2023 electorates)
+function lean2023(e) {
+  if (!SPM) SPM = prepSpecials();
+  const prof = SPM && SPM.profiles[e.id];
+  if (!prof || prof.how === "national") return null;
+  const n = SPM.n, ord = new Array(n).fill(0), spec = new Array(n).fill(0);
+  let rate = 0;
+  prof.from.forEach(([nm, f]) => {
+    const x = SPM.E[String(nm).normalize("NFC")]; if (!x) return;
+    for (let i = 0; i < n; i++) { ord[i] += f * x.ord[i] / x.ord[n] * 100; spec[i] += f * x.spec[i] / x.spec[n] * 100; }
+    rate += f * x.spec[n] / x.ord[n];
+  });
+  const rows = SPM.names.map((nm, i) => {
+    const pid = SPM.col2pid[i], p = pid ? DATA.parties.find(q => q.id === pid) : null;
+    return { label: p ? pabbr(p) : nm.replace(/ Party$/, ""), color: p ? pc(p) : "var(--p-other)", ord: ord[i], spec: spec[i], diff: spec[i] - ord[i] };
+  }).filter(r => r.ord >= 1 || r.spec >= 1).sort((a, b) => b.spec - a.spec);
+  return { rows, rate, from: prof.from };
+}
+
+function runSpecials() {
+  if (!SPM) SPM = prepSpecials();
+  if (!SPM) return null;
+  const kFor = (prof, pid) => { const i = SPM.col2pid.indexOf(pid); return Math.pow(i >= 0 ? prof.k[i] : 1, SIM.skew); };
+  // pass 1: finished ordinary count and each electorate's share of the specials
+  const rows = DATA.electorates.map(e => {
+    const prof = SPM.profiles[e.id];
+    const O = Object.values(e.partyVotes).reduce((a, b) => a + b, 0);
+    const add = outstandingOrdinary(e, O), scale = O ? (O + add) / O : 1;
+    return { e, prof, O, scale, base: (O + add) * prof.rate };
+  });
+  const baseTotal = rows.reduce((a, r) => a + r.base, 0);
+  const at2023 = Math.round(baseTotal);
+  const target = SIM.target == null ? (feedSpecialsEstimate() ?? at2023) : SIM.target;
+  const factor = baseTotal ? target / baseTotal : 0;
+  const votes = {}, specials = {}, ordAdded = { v: 0 };
+  DATA.parties.forEach(p => { votes[p.id] = 0; specials[p.id] = 0; });
+  const winners = [], byE = {};
+  for (const { e, prof, O, scale, base } of rows) {
+    const pv = e.partyVotes, S = base * factor;
+    const pe = byE[e.id] = { S, scale, prof, party: {} };
+    const wts = {}; let wsum = 0;
+    for (const pid in pv) { wts[pid] = pv[pid] * kFor(prof, pid); wsum += wts[pid]; }
+    for (const pid in pv) {
+      const s = wsum ? S * wts[pid] / wsum : 0;
+      votes[pid] = (votes[pid] || 0) + pv[pid] * scale + s; specials[pid] = (specials[pid] || 0) + s;
+      ordAdded.v += pv[pid] * (scale - 1);
+      pe.party[pid] = { now: pv[pid], proj: pv[pid] * scale + s, spec: s };
+    }
+    const C = e.candidates.reduce((a, c) => a + c.votes, 0);
+    if (!C) { pe.none = true; winners.push({ e, none: true }); continue; }
+    const Sc = O ? S * prof.cand * C / O : 0;
+    // Candidate specials: each party's projected specials follow how that party's voters split their candidate
+    // vote at this electorate's voting places (fitted from place results). Fallback: candidate's own party lean.
+    const tr = DATA.transfer && DATA.transfer[e.id];
+    let addC;
+    if (tr) {
+      const specOf = pid => pid === "other"
+        ? Object.entries(pe.party).filter(([k]) => !tr.parties.includes(k)).reduce((a, [, v]) => a + v.spec, 0)
+        : (pe.party[pid] ? pe.party[pid].spec : 0);
+      const addFor = T => {
+        const raw = tr.cands.map((cid, ci) => tr.parties.reduce((a, pid, j) => a + specOf(pid) * T[j][ci], 0));
+        const rs = raw.reduce((a, v, ci) => a + (tr.cands[ci] === "none" ? 0 : v), 0);
+        return e.candidates.map(c => { const ci = tr.cands.indexOf(c.id); return ci >= 0 && rs ? Sc * raw[ci] / rs : 0; });
+      };
+      addC = addFor(tr.T);
+      pe.split = true;
+      pe.bootAdds = splitSamples(tr).map(addFor);
+    } else {
+      const cw = e.candidates.map(c => c.votes * (isListParty(c.party) ? kFor(prof, c.party) : 1)), cws = cw.reduce((a, b) => a + b, 0);
+      addC = e.candidates.map((c, i) => cws ? Sc * cw[i] / cws : 0);
+    }
+    const proj = e.candidates.map((c, i) => ({ ...c, proj: c.votes * scale + addC[i], _i: i })).sort((a, b) => b.proj - a.proj);
+    // How firm the projected lead is across the bootstrap refits of the candidate split
+    if (pe.bootAdds && pe.bootAdds.length && proj[1]) {
+      const L = proj[0]._i, R2 = proj[1]._i;
+      const margins = pe.bootAdds.map(add => (e.candidates[L].votes * scale + add[L]) - (e.candidates[R2].votes * scale + add[R2]));
+      const holds = pe.bootAdds.filter(add => e.candidates.every((c, i) => i === L || e.candidates[L].votes * scale + add[L] > c.votes * scale + add[i])).length;
+      pe.range = [pctile(margins, 0.1), pctile(margins, 0.9)];
+      pe.holds = holds / pe.bootAdds.length;
+      pe.fits = pe.bootAdds.length;
+    }
+    winners.push({ e, now: e.candidates[0], lead: proj[0], second: proj[1], margin: proj[0].proj - (proj[1] ? proj[1].proj : 0), pe });
+    pe.Sc = Sc;
+    pe.cands = proj.map(c => ({ ...c, counted: c.votes, spec: c.proj - c.votes * scale }));
+    pe.flip = !(proj[0].name === e.candidates[0].name && proj[0].party === e.candidates[0].party);
+    pe.from = e.candidates[0];
+  }
+  const total = Object.values(votes).reduce((a, b) => a + b, 0);
+  const elect = {}, indep = [];
+  winners.forEach(w => { if (w.none) return; if (isListParty(w.lead.party)) elect[w.lead.party] = (elect[w.lead.party] || 0) + 1; else indep.push(w); });
+  const seats = mmpAllocate(votes, elect, total, MMP_SEATS - indep.length);
+  const out = DATA.parties.map(p => {
+    const s = seats[p.id] || 0, el = elect[p.id] || 0;
+    return { ...p, votes: Math.round(votes[p.id] || 0), pct: total ? votes[p.id] / total * 100 : 0, elect: el, seats: s, list: Math.max(0, s - el), alloc: seats.alloc[p.id] || 0, specials: specials[p.id] || 0 };
+  });
+  const same = (a, b) => a && b && a.name === b.name && a.party === b.party;
+  const flips = winners.filter(w => !w.none && !same(w.now, w.lead));
+  const close = winners.filter(w => !w.none && w.second && w.margin < 500).sort((a, b) => a.margin - b.margin);
+  const house = Object.values(seats).reduce((a, b) => a + b, 0) + indep.length;
+  return { byE, parties: out, specTotal: target, at2023, feedEst: feedSpecialsEstimate(), ordAdded: ordAdded.v, flips, close, indep, noResult: winners.filter(w => w.none), house };
+}
+
+function renderSim() {
+  const box = $("#sim");
+  if (!DATA.sp23) { box.hidden = true; SIM.result = null; SIM.on = false; return; }
+  box.hidden = false;
+  SIM.result = runSpecials();
+  const R = SIM.result; if (!R) return;
+  const vol = $("#simVol");
+  if (SIM.target == null) vol.value = Math.round(R.specTotal / 5000) * 5000;
+  $("#simVolOut").innerHTML = `<b>${fmt(Math.round(R.specTotal / 1000) * 1000)}</b>${SIM.target == null ? " (Commission estimate)" : ""}`;
+  $("#simSkewOut").textContent = SIM.skew === 1 ? "2023" : SIM.skew === 0 ? "None" : `${Math.round(SIM.skew * 100)}%`;
+  const rows = R.parties.filter(p => p.seats > 0 || DATA.parties.some(q => q.id === p.id && q.seats > 0)).sort((a, b) => b.pct - a.pct);
+  const now = id => DATA.parties.find(p => p.id === id);
+  const d = (v, dp = 2) => (v > 0.0049 ? "+" : v < -0.0049 ? "−" : "±") + Math.abs(v).toFixed(dp);
+  const indRow = R.indep.length ? `<tr><td><div class="pn"><span class="sw" style="background:var(--p-other)"></span><span>Independent</span></div></td><td class="r num">–</td><td class="r num">–</td><td></td><td class="r num hide-sm"></td><td class="r num"></td><td class="r num"><b>${R.indep.length}</b></td><td></td></tr>` : "";
+  $("#simBody").innerHTML = rows.map(p => {
+    const n = now(p.id), ds = p.seats - n.seats, dpct = p.pct - n.pct;
+    return `<tr>
+      <td><div class="pn"><span class="sw" style="background:${pc(p)}"></span><span>${esc(pname(p))}</span></div></td>
+      <td class="r num">${n.pct.toFixed(2)}</td>
+      <td class="r num"><b>${p.pct.toFixed(2)}</b></td>
+      <td class="r num ${Math.abs(dpct) >= 0.005 ? (dpct > 0 ? "up" : "dn") : ""}">${d(dpct)}</td>
+      <td class="r num hide-sm">${fmt(Math.round(p.specials))}</td>
+      <td class="r num">${n.seats}</td>
+      <td class="r num"><b>${p.seats}</b></td>
+      <td class="r num ${ds ? (ds > 0 ? "up" : "dn") : ""}">${ds ? d(ds, 0) : ""}</td>
+    </tr>`;
+  }).join("") + indRow;
+  const majority = Math.floor(R.house / 2) + 1;
+  const who = c => isListParty(c.party) ? esc(pabbr(parties[c.party])) : "Ind";
+  const firm = w => w.pe && w.pe.fits ? ` <span class="firm">· ahead in ${Math.round(w.pe.holds * w.pe.fits)} of ${w.pe.fits} fits</span>` : "";
+  const flipTxt = R.flips.length
+    ? R.flips.map(w => `<li><b>${esc(w.e.name)}</b>: ${esc(person(w.lead.name).full)} (${who(w.lead)}) overtakes ${esc(person(w.now.name).sur)} (${who(w.now)}) by about ${fmt(Math.round(w.margin))}${firm(w)}</li>`).join("")
+    : `<li>None</li>`;
+  const closeTxt = R.close.filter(w => !R.flips.includes(w)).slice(0, 6).map(w => `<li><b>${esc(w.e.name)}</b>: ${esc(person(w.lead.name).sur)} (${who(w.lead)}) ahead by about ${fmt(Math.round(w.margin))}${firm(w)}</li>`).join("");
+  $("#simNotes").innerHTML = `
+    <div><div class="label">House</div><p>${R.house} seats · ${majority} to govern${R.indep.length ? ` · ${R.indep.length} independent` : ""}</p></div>
+    <div><div class="label">Electorates that flip</div><ul>${flipTxt}</ul></div>
+    ${closeTxt ? `<div><div class="label">Still within 500 votes</div><ul>${closeTxt}</ul></div>` : ""}
+    ${R.noResult.length ? `<div><div class="label">No result yet</div><p>${R.noResult.map(w => esc(w.e.name)).join(", ")}</p></div>` : ""}`;
+}
+
+$("#simVol").addEventListener("input", e => { SIM.target = +e.target.value; refreshParl(); });
+$("#simSkew").addEventListener("input", e => { SIM.skew = +e.target.value / 100; refreshParl(); });
+$("#simApply").addEventListener("click", () => { SIM.on = !SIM.on; refreshParl(); });
+$("#eSimToggle").addEventListener("click", () => { SIM.on = !SIM.on; refreshParl(); });
+$("#simOff").addEventListener("click", () => { SIM.on = false; refreshParl(); });
+$("#simReset").addEventListener("click", () => { SIM.target = null; SIM.skew = 1; $("#simSkew").value = 100; refreshParl(); });
+
+/* ---------- routing ---------- */
+function route() {
+  const h = location.hash.slice(1);
+  const m = /^e(\d+)$/.exec(h);
+  const view = m || h === "electorates" ? "electorates" : "parliament";
+  ["parliament", "electorates"].forEach(v => {
+    $("#view-" + v).hidden = view !== v;
+    $("#tab-" + v).removeAttribute("aria-current");
+  });
+  $("#tab-" + view).setAttribute("aria-current", "page");
+  if (m) openDetail(+m[1]); else if (dlg.open) dlg.close();
+}
+
+/* ---------- events (bound once) ---------- */
+["A", "B"].forEach(k => {
+  const el = $("#name" + k);
+  el.value = store.get("nzev-name" + k, el.value);
+  el.addEventListener("input", () => { store.set("nzev-name" + k, el.value); renderTug(); renderRows(); });
+});
+$("#prows").addEventListener("click", e => {
+  const b = e.target.closest("button[data-p]"); if (!b) return;
+  const next = { A: "", "": "B", B: "A" };
+  blocs[b.dataset.p] = next[blocs[b.dataset.p] || ""];
+  store.set("nzev-blocs", blocs);
+  renderAllParl();
+  const again = $(`#prows button[data-p="${b.dataset.p}"]`); if (again) again.focus();
+});
+$("#presetBlocs").onclick = () => { seated.forEach(p => blocs[p.id] = DEFAULT_BLOCS[p.abbrev] || ""); store.set("nzev-blocs", blocs); renderAllParl(); };
+["#esearch", "#etype", "#eparty", "#esort"].forEach(s => $(s).addEventListener("input", renderGrid));
+$("#egrid").addEventListener("click", e => {
+  const t = e.target.closest(".tile"); if (!t) return;
+  location.hash = "e" + t.dataset.e;
+});
+addEventListener("hashchange", route);
+
+/* ---------- render + live refresh ---------- */
+let lastTotal = -1;
+// Chamber, tally and coalition builder use the projection when it's switched on.
+function refreshParl() {
+  derive(DATA);
+  renderSim();
+  if (SIM.on && SIM.result) derive(DATA, SIM.result.parties);
+  renderAllParl();
+  $("#simBadge").hidden = !SIM.on;
+  renderLeadStrip(); renderGrid();
+  renderSimBars();
+  if (openId !== null && dlg.open) openDetail(openId);
+}
+function renderSimBars() {
+  const has = !!(DATA.sp23 && SIM.result);
+  $("#eSimBar").hidden = !has;
+  const label = SIM.on ? "Turn off projection" : "Apply special votes projection";
+  for (const id of ["#simApply", "#eSimToggle"]) { $(id).setAttribute("aria-pressed", SIM.on); $(id).textContent = label; }
+  if (has) $("#eSimText").innerHTML = SIM.on
+    ? `With projected specials (${fmt(Math.round(SIM.result.specTotal / 1000) * 1000)}, ${SIM.skew === 1 ? "2023 lean" : Math.round(SIM.skew * 100) + "% of 2023 lean"})`
+    : "";
+}
+function renderAll() {
+  SPM = null;
+  renderHeader();
+  refreshParl();
+  derive(DATA);
+  renderVotes();
+  renderLeadStrip();
+  renderGrid();
+  if (SIM.on && SIM.result) derive(DATA, SIM.result.parties);
+  if (openId !== null && dlg.open) openDetail(openId);
+}
+
+let nextAt = Date.now() + REFRESH_MS, checking = false, lastMsg = "";
+async function checkForUpdates() {
+  if (checking) return;
+  checking = true;
+  $("#refreshText").textContent = "Checking for new results…";
+  try {
+    const r = await fetch("data.json?t=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    if (d && d.updated && d.updated !== DATA.updated) {
+      DATA = d;
+      renderAll();
+      const s = $("#facts"); s.classList.remove("flash"); void s.offsetWidth; s.classList.add("flash");
+      lastMsg = "New results loaded";
+    } else {
+      lastMsg = "No new results";
+    }
+  } catch {
+    lastMsg = "Couldn't reach the results file";
+  }
+  checking = false;
+  nextAt = Date.now() + REFRESH_MS;
+  tick();
+}
+function tick() {
+  if (checking) return;
+  const s = Math.max(0, Math.round((nextAt - Date.now()) / 1000));
+  const mm = Math.floor(s / 60), ss = String(s % 60).padStart(2, "0");
+  $("#refreshText").textContent = (lastMsg ? lastMsg + " · " : "") + `next check in ${mm}:${ss}`;
+  if (s === 0) checkForUpdates();
+}
+if (STATIC) {
+  $("#refreshText").textContent = "Preliminary. Official results 27 November.";
+  $("#refreshNow").hidden = true;
+} else {
+  $("#refreshNow").onclick = checkForUpdates;
+  setInterval(tick, 1000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() > nextAt) checkForUpdates(); });
+}
+
+document.documentElement.classList.add("intro");
+renderAll();
+route();
+setTimeout(() => document.documentElement.classList.remove("intro"), 2000);
+if (!STATIC) checkForUpdates();
+</script>

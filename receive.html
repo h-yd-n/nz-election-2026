@@ -1,0 +1,33 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>2023 import receiver</title>
+<p>Waiting for 2023 voting place data…</p>
+<script>
+// Receives the 2023 results summary from the Electoral Commission archive tab and saves it via the local server.
+// Data arrives in the URL fragment (never sent over the network) or by postMessage.
+if (location.hash.length > 10) (async () => {
+  let status;
+  try {
+    const d = JSON.parse(decodeURIComponent(location.hash.slice(1)));
+    const kind = d.kind === "specials2023" ? "specials2023" : "2023";
+    if (kind === "2023" && (!d.places || !Array.isArray(d.cols))) throw new Error("unexpected shape");
+    if (kind === "specials2023" && !Array.isArray(d.electorates)) throw new Error("unexpected shape");
+    const r = await fetch("/import-" + kind, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) });
+    status = r.status + " " + await r.text() + " · " + kind;
+  } catch (err) { status = "failed: " + err.message; }
+  history.replaceState(null, "", location.pathname);
+  document.body.textContent = "Import: " + status;
+})();
+addEventListener("message", async e => {
+  if (e.origin !== "https://archive.electionresults.govt.nz") return;
+  const d = e.data;
+  if (!d || typeof d !== "object" || !d.places || !Array.isArray(d.cols)) return;
+  let status;
+  try {
+    const r = await fetch("/import-2023", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) });
+    status = r.status + " " + await r.text();
+  } catch (err) { status = "failed: " + err.message; }
+  document.body.textContent = "Import: " + status;
+  e.source.postMessage({ importStatus: status }, e.origin);
+});
+</script>
