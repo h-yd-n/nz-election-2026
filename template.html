@@ -136,6 +136,8 @@ nav.tabs a {
 }
 nav.tabs a[aria-current="page"] { color: var(--fg); border-bottom-color: var(--fg); }
 nav.tabs a:hover { color: var(--fg); }
+.tl-short { display: none; }
+@media (max-width: 480px) { .tl-wide { display: none; } .tl-short { display: inline; } }
 
 main { padding-block: 8px 48px; }
 section.view { display: grid; }
@@ -278,7 +280,7 @@ section.view { display: grid; }
 .simout { color: var(--muted); font-size: 13px; }
 .simout b { color: var(--fg); }
 .simsub { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; }
-.simdek { margin: -4px 0 16px; } .simdek p { margin: 0 0 8px; }
+.simdek { margin: 0 0 20px; } .simdek p { margin: 0 0 8px; } .simdek .btn { margin-top: 6px; }
 .plean { margin-top: 14px; font-size: 13.5px; }
 .plean summary { cursor: pointer; font-weight: 600; width: fit-content; }
 .plean[open] summary { margin-bottom: 10px; }
@@ -422,13 +424,14 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
   <div class="wrap">
     <a href="#parliament" id="tab-parliament">Parliament</a>
     <a href="#electorates" id="tab-electorates">Electorates</a>
+    <a href="#specials" id="tab-specials"><span class="tl-wide">Special vote projection</span><span class="tl-short">Specials</span></a>
   </div>
 </nav>
 
 <main class="wrap">
   <section class="view" id="view-parliament">
     <div class="block">
-      <div class="simbadge" id="simBadge" hidden><span>With projected specials</span><button class="linkbtn" id="simOff">Show election night</button></div>
+      <div class="simbadge" id="simBadge" hidden><span>With projected specials · <a href="#specials">Adjust</a></span><button class="linkbtn" id="simOff">Show election night</button></div>
       <div class="parl">
         <div class="chamber">
           <div class="tug">
@@ -454,14 +457,24 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
       </div>
     </div>
 
-    <div class="block" id="sim" hidden>
-      <div class="bhead">
-        <h2>Special votes</h2>
-        <button class="btn" id="simApply" aria-pressed="false">Apply special votes projection</button>
+    <div class="block">
+      <h2>Party vote</h2>
+      <div class="closest" id="closest"></div>
+      <div class="scroll-x">
+        <table class="vtable">
+          <thead><tr><th>Party</th><th class="r hide-sm">Votes</th><th class="r">%</th><th class="barcell hide-sm"></th><th class="r hide-sm">Elect.</th><th class="r hide-sm">List</th><th class="r">Seats</th><th class="r" title="Electorate seats won beyond the party's party-vote entitlement"><span class="wide">Overhang</span><span class="short">Over.</span></th><th class="mcell"><span class="wide">Seat margin <span class="thint">(pts)</span></span><span class="short">Margin</span></th></tr></thead>
+          <tbody id="vbody"></tbody>
+        </table>
       </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-specials" hidden>
+    <div class="block" id="sim" hidden>
       <div class="dek simdek">
         <p>Special votes tend to favour some parties more than others, and this can change the final result once all votes are counted.</p>
         <p>Below you can adjust the number of specials and how much they lean to see how it will affect the final result. The defaults are based on how many special votes the Electoral Commission estimates there are to be counted and how special votes leaned in 2023.</p>
+        <button class="btn" id="simApply" aria-pressed="false">Apply special votes projection</button>
       </div>
       <div class="simctl">
         <label for="simVol">Special votes</label>
@@ -493,17 +506,6 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
           <li>Candidates: each party's specials follow how its voters split their candidate vote, estimated from that electorate's voting places. Seats re-run under MMP.</li>
         </ul>
       </details>
-    </div>
-
-    <div class="block">
-      <h2>Party vote</h2>
-      <div class="closest" id="closest"></div>
-      <div class="scroll-x">
-        <table class="vtable">
-          <thead><tr><th>Party</th><th class="r hide-sm">Votes</th><th class="r">%</th><th class="barcell hide-sm"></th><th class="r hide-sm">Elect.</th><th class="r hide-sm">List</th><th class="r">Seats</th><th class="r" title="Electorate seats won beyond the party's party-vote entitlement"><span class="wide">Overhang</span><span class="short">Over.</span></th><th class="mcell"><span class="wide">Seat margin <span class="thint">(pts)</span></span><span class="short">Margin</span></th></tr></thead>
-          <tbody id="vbody"></tbody>
-        </table>
-      </div>
     </div>
   </section>
 
@@ -1289,8 +1291,9 @@ $("#simReset").addEventListener("click", () => { SIM.target = null; SIM.skew = 1
 function route() {
   const h = location.hash.slice(1);
   const m = /^e(\d+)$/.exec(h);
-  const view = m || h === "electorates" ? "electorates" : "parliament";
-  ["parliament", "electorates"].forEach(v => {
+  const view = m || h === "electorates" ? "electorates" : h === "specials" && DATA.sp23 ? "specials" : "parliament";
+  $("#tab-specials").hidden = !DATA.sp23;
+  ["parliament", "electorates", "specials"].forEach(v => {
     $("#view-" + v).hidden = view !== v;
     $("#tab-" + v).removeAttribute("aria-current");
   });
