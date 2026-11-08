@@ -1,4 +1,4 @@
-# NZ 2026 election results
+# NZ 2026 election special votes projection
 
 Live at https://h-yd-n.github.io/nz-election-2026/
 
