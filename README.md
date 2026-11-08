@@ -20,4 +20,4 @@ This pulls the Electoral Commission feed (https://media.election.net.nz/xml/), e
 
 ## Share image
 
-`og.png` is rendered from `og-card.html`, which has its figures typed in. The render command is in a comment at the top of that file.
+`og.png` is rendered from `og-card.html`: party colours sized by preliminary seats, typed in. The render command is in a comment at the top of that file.

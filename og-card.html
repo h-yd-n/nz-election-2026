@@ -1,57 +1,22 @@
 <!doctype html>
-<!-- Source for og.png (the social share image). Figures are hard-coded from the final preliminary count and the
-     default specials projection. Regenerate after changing them:
+<!-- Source for og.png (the social share image): each party's colour takes width in proportion to its preliminary
+     seats (131), in the same left-to-right order as the page's seat bar. Regenerate after changing it:
      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --hide-scrollbars --window-size=1200,630 \
-       --virtual-time-budget=4000 --screenshot=og.png og-card.html -->
+       --screenshot=og.png og-card.html -->
 <html lang="en-NZ">
 <meta charset="utf-8">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>
-  * { box-sizing: border-box; margin: 0; }
-  html, body { width: 1200px; height: 630px; background: #fff; color: #15171a; font-family: "Public Sans", Arial, sans-serif; overflow: hidden; }
-  .card { padding: 56px 64px; height: 100%; display: grid; grid-template-rows: auto 1fr auto; gap: 26px; }
-  h1 { font-family: "Schibsted Grotesk", Arial, sans-serif; font-size: 54px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; padding-bottom: 20px; border-bottom: 5px solid #15171a; }
-  .rows { display: grid; gap: 30px; align-content: center; }
-  .row { display: grid; gap: 10px; }
-  .label { font-size: 21px; font-weight: 600; color: #5c636c; display: flex; justify-content: space-between; }
-  .label b { color: #15171a; }
-  .line { display: grid; grid-template-columns: 92px 1fr 92px; align-items: center; gap: 18px; }
-  .n { font-family: "Schibsted Grotesk", Arial, sans-serif; font-size: 66px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
-  .n.b { text-align: right; }
-  .wrap { position: relative; }
-  .bar { height: 34px; background: #eceef0; display: flex; gap: 2px; }
-  .bar div { height: 100%; }
-  .bar .faded { opacity: .35; }
-  .maj { position: absolute; top: -8px; bottom: -8px; left: 50%; width: 3px; margin-left: -1.5px; background: #15171a; }
-  .foot { display: flex; justify-content: space-between; font-size: 20px; color: #5c636c; }
-  .foot .blocs b { color: #15171a; }
+  * { margin: 0; }
+  html, body { width: 1200px; height: 630px; background: #fff; overflow: hidden; }
+  .bands { display: flex; gap: 6px; height: 100%; padding: 0; }
+  .bands div { height: 100%; }
 </style>
-<div class="card">
-  <h1>Election 2026 specials projection</h1>
-  <div class="rows">
-    <div class="row">
-      <div class="label"><span><b>Preliminary</b> · 131 seats, 66 to govern</span></div>
-      <div class="line">
-        <span class="n">57</span>
-        <div class="wrap"><div class="bar">
-          <div style="flex:0 0 3.817%;background:#8e1b3a"></div><div style="flex:0 0 12.214%;background:#0f8a3f"></div><div style="flex:0 0 27.481%;background:#d82a20"></div><div class="faded" style="flex:0 0 5.344%;background:#12b3a0"></div><div style="flex:0 0 9.924%;background:#f2c400"></div><div style="flex:0 0 32.061%;background:#1b5fae"></div><div style="flex:0 0 9.16%;background:#2c2c2c"></div>
-        </div><div class="maj"></div></div>
-        <span class="n b">67</span>
-      </div>
-    </div>
-    <div class="row">
-      <div class="label"><span><b>With projected special votes</b> · 130 seats, 66 to govern</span></div>
-      <div class="line">
-        <span class="n">57</span>
-        <div class="wrap"><div class="bar">
-          <div style="flex:0 0 3.846%;background:#8e1b3a"></div><div style="flex:0 0 13.077%;background:#0f8a3f"></div><div style="flex:0 0 26.923%;background:#d82a20"></div><div class="faded" style="flex:0 0 6.154%;background:#12b3a0"></div><div style="flex:0 0 10%;background:#f2c400"></div><div style="flex:0 0 31.538%;background:#1b5fae"></div><div style="flex:0 0 8.462%;background:#2c2c2c"></div>
-        </div><div class="maj"></div></div>
-        <span class="n b">65</span>
-      </div>
-    </div>
-  </div>
-  <div class="foot">
-    <span class="blocs"><b>Centre-left</b> TPM, GP, LAB &nbsp;·&nbsp; <b>Centre-right</b> ACT, NAT, NZF</span>
-    <span>Try your own assumptions</span>
-  </div>
+<div class="bands">
+  <div style="flex:5;background:#8e1b3a"></div>
+  <div style="flex:16;background:#0f8a3f"></div>
+  <div style="flex:36;background:#d82a20"></div>
+  <div style="flex:7;background:#12b3a0"></div>
+  <div style="flex:13;background:#f2c400"></div>
+  <div style="flex:42;background:#1b5fae"></div>
+  <div style="flex:12;background:#2c2c2c"></div>
 </div>
