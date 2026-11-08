@@ -506,7 +506,7 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
       <div class="simgrid">
         <div class="scroll-x">
           <table class="vtable simt">
-            <thead><tr><th>Party</th><th class="r">Prelim. %</th><th class="r">Projected %</th><th class="r">Change</th><th class="r hide-sm">Specials</th><th class="r">Seats</th><th class="r">Projected</th><th class="r"></th></tr></thead>
+            <thead><tr><th>Party</th><th class="r"><span class="wide">Prelim. %</span><span class="short">Prelim.</span></th><th class="r"><span class="wide">Projected %</span><span class="short">Proj.</span></th><th class="r"><span class="wide">Change</span><span class="short">±</span></th><th class="r hide-sm">Specials</th><th class="r">Seats</th><th class="r"><span class="wide">Projected</span><span class="short">Proj.</span></th><th class="r"></th></tr></thead>
             <tbody id="simBody"></tbody>
           </table>
         </div>
@@ -1201,11 +1201,11 @@ function renderSim() {
   const rows = R.parties.filter(p => p.seats > 0 || DATA.parties.some(q => q.id === p.id && q.seats > 0)).sort((a, b) => b.pct - a.pct);
   const now = id => DATA.parties.find(p => p.id === id);
   const d = (v, dp = 2) => (v > 0.0049 ? "+" : v < -0.0049 ? "−" : "±") + Math.abs(v).toFixed(dp);
-  const indRow = R.indep.length ? `<tr><td><div class="pn"><span class="sw" style="background:var(--p-other)"></span><span>Independent</span></div></td><td class="r num">–</td><td class="r num">–</td><td></td><td class="r num hide-sm"></td><td class="r num"></td><td class="r num"><b>${R.indep.length}</b></td><td></td></tr>` : "";
+  const indRow = R.indep.length ? `<tr><td><div class="pn"><span class="sw" style="background:var(--p-other)"></span><span class="wide">Independent</span><span class="short">Ind</span></div></td><td class="r num">–</td><td class="r num">–</td><td></td><td class="r num hide-sm"></td><td class="r num"></td><td class="r num"><b>${R.indep.length}</b></td><td></td></tr>` : "";
   $("#simBody").innerHTML = rows.map(p => {
     const n = now(p.id), ds = p.seats - n.seats, dpct = p.pct - n.pct;
     return `<tr>
-      <td><div class="pn"><span class="sw" style="background:${pc(p)}"></span><span>${esc(pname(p))}</span></div></td>
+      <td><div class="pn"><span class="sw" style="background:${pc(p)}"></span><span class="wide">${esc(pname(p))}</span><span class="short" title="${esc(pname(p))}">${esc(pabbr(p))}</span></div></td>
       <td class="r num">${n.pct.toFixed(2)}</td>
       <td class="r num"><b>${p.pct.toFixed(2)}</b></td>
       <td class="r num ${Math.abs(dpct) >= 0.005 ? (dpct > 0 ? "up" : "dn") : ""}">${d(dpct)}</td>
