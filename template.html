@@ -129,7 +129,7 @@ nav.tabs {
   border-bottom: 1px solid var(--line); margin-top: 18px;
 }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
-nav.tabs .wrap { display: flex; gap: 24px; overflow-x: auto; }
+nav.tabs .tabrow { display: flex; gap: 24px; overflow-x: auto; }
 nav.tabs a {
   padding: 12px 0 10px; text-decoration: none; color: var(--muted); font-weight: 600; font-size: 15px;
   border-bottom: 2px solid transparent; white-space: nowrap;
@@ -155,9 +155,6 @@ section.view { display: grid; }
 .esim:has(button[aria-pressed="true"]) { box-shadow: inset 0 0 0 1.5px var(--fg); }
 
 /* Parliament */
-.parl { display: grid; grid-template-columns: minmax(0, 1fr); }
-@media (max-width: 900px) { .parl { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
-.chamber { display: grid; gap: 16px; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; }
 .legend button { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; padding: 2px 0; cursor: pointer; color: var(--fg); }
 .legend button[aria-pressed="false"] { opacity: .35; }
@@ -166,6 +163,34 @@ section.view { display: grid; }
 .key i { display: inline-block; width: 10px; height: 10px; vertical-align: -1px; margin-right: 5px; }
 .key i.e { background: var(--fg); }
 .key i.l { background: color-mix(in srgb, var(--fg) 40%, var(--bg)); }
+
+/* Hero: seats by bloc, shared by every tab */
+.hero { display: grid; gap: 10px; padding-top: 18px; }
+.hero .tug-head .score { font-size: 34px; }
+.hero .tug-bar { height: 16px; }
+.hero .chipreset { margin-top: -2px; }
+.mast { padding-block: 22px 0; gap: 10px; }
+.mast h1 { font-size: clamp(26px, 3.6vw, 36px); }
+
+/* Pinned mini chart: shows in the sticky tab bar once the hero scrolls away */
+/* absolutely placed under the tab row so pinning never shifts the page; full-bleed background via shadow */
+.mini {
+  position: absolute; top: 100%; left: 0; right: 0; height: 36px; display: flex; align-items: center; gap: 8px; font-size: 13px;
+  background: var(--bg); box-shadow: 0 0 0 100vmax var(--bg), 0 1px 0 100vmax var(--line); clip-path: inset(0 -100vmax -1px);
+  opacity: 0; transform: translateY(-6px); pointer-events: none; visibility: hidden; transition: opacity .2s ease, transform .2s ease, visibility 0s .2s;
+}
+nav.tabs.pinned .mini { opacity: 1; transform: none; visibility: visible; transition: opacity .2s ease, transform .2s ease; }
+.mini b { font-family: var(--f-display); font-size: 17px; font-weight: 800; min-width: 2ch; }
+.mini b#miniB { text-align: right; }
+.mini .mn { color: var(--muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 14ch; }
+.mini-wrap { position: relative; flex: 1; min-width: 60px; }
+.mini-bar { height: 10px; background: var(--track); display: flex; gap: 1px; }
+.mini-bar div { height: 100%; transition: flex-basis .7s cubic-bezier(.2,.8,.2,1), opacity .3s ease; }
+.mini-bar .faded { opacity: .35; }
+.mini-wrap .tug-line { top: -3px; bottom: -3px; }
+.mini-tag { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+@media (max-width: 480px) { .mini .mn { display: none; } }
+nav.tabs { margin-top: 10px; }
 
 /* Majority tally */
 .tug { display: grid; gap: 8px; }
@@ -298,9 +323,6 @@ section.view { display: grid; }
 /* Electorates */
 .etools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .etools input[type=search] { flex: 1 1 240px; min-width: 0; }
-.leadstrip { display: grid; gap: 8px; }
-.leadstrip .bar { display: flex; height: 22px; gap: 1px; }
-.leadstrip .bar div { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; min-width: 0; overflow: hidden; }
 .egrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); column-gap: 28px; }
 .tile {
   text-align: left; border: 0; border-bottom: 1px solid var(--line); background: none; padding: 12px 0 11px; cursor: pointer;
@@ -411,8 +433,37 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
   </div>
 </header>
 
+<section class="hero wrap" id="hero" aria-label="Seats by bloc">
+  <div class="simbadge" id="simBadge" hidden><span>With projected specials · <a href="#specials">Adjust</a></span><button class="linkbtn" id="simOff">Show election night</button></div>
+  <div class="tug">
+    <div class="tug-head">
+      <div class="side a">
+        <input id="nameA" aria-label="Name of first bloc" value="Centre-left">
+        <span class="score num" id="scoreA">0</span>
+      </div>
+      <div class="mid"><span class="num" id="majNeed">66</span> to govern<br><span id="houseSize"></span></div>
+      <div class="side b">
+        <input id="nameB" aria-label="Name of second bloc" value="Centre-right">
+        <span class="score num" id="scoreB">0</span>
+      </div>
+    </div>
+    <div class="tug-wrap">
+      <div class="tug-bar" id="tugBar"></div>
+      <div class="tug-line" title="Majority line"></div>
+    </div>
+    <div class="chips" id="prows" aria-label="Parties by bloc. Select a party to move it."></div>
+    <button class="linkbtn chipreset" id="presetBlocs">Reset blocs</button>
+  </div>
+</section>
+
 <nav class="tabs" aria-label="Views">
-  <div class="wrap">
+  <div class="mini wrap" id="mini" aria-hidden="true">
+    <span class="mn a" id="miniNameA"></span><b class="num" id="miniA"></b>
+    <div class="mini-wrap"><div class="mini-bar" id="miniBar"></div><div class="tug-line"></div></div>
+    <b class="num" id="miniB"></b><span class="mn b" id="miniNameB"></span>
+    <span class="mini-tag" id="miniTag" hidden>Projected</span>
+  </div>
+  <div class="wrap tabrow">
     <a href="#parliament" id="tab-parliament">Parliament</a>
     <a href="#electorates" id="tab-electorates">Electorates</a>
     <a href="#specials" id="tab-specials"><span class="tl-wide">Special vote projection</span><span class="tl-short">Specials</span></a>
@@ -421,33 +472,6 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
 
 <main class="wrap">
   <section class="view" id="view-parliament">
-    <div class="block">
-      <div class="simbadge" id="simBadge" hidden><span>With projected specials · <a href="#specials">Adjust</a></span><button class="linkbtn" id="simOff">Show election night</button></div>
-      <div class="parl">
-        <div class="chamber">
-          <div class="tug">
-            <div class="tug-head">
-              <div class="side a">
-                <input id="nameA" aria-label="Name of first bloc" value="Centre-left">
-                <span class="score num" id="scoreA">0</span>
-              </div>
-              <div class="mid"><span class="num" id="majNeed">66</span> to govern<br><span id="houseSize"></span></div>
-              <div class="side b">
-                <input id="nameB" aria-label="Name of second bloc" value="Centre-right">
-                <span class="score num" id="scoreB">0</span>
-              </div>
-            </div>
-            <div class="tug-wrap">
-              <div class="tug-bar" id="tugBar"></div>
-              <div class="tug-line" title="Majority line"></div>
-            </div>
-            <div class="chips" id="prows" aria-label="Parties by bloc. Select a party to move it."></div>
-            <button class="linkbtn chipreset" id="presetBlocs">Reset blocs</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="block">
       <h2>Party vote</h2>
       <div class="scroll-x">
@@ -504,11 +528,6 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
       <div class="esim" id="eSimBar" hidden>
         <span id="eSimText"></span>
         <button class="btn" id="eSimToggle" aria-pressed="false">Apply special votes projection</button>
-      </div>
-      <div class="leadstrip">
-        <div class="label">Electorates by leading party</div>
-        <div class="bar" id="leadBar"></div>
-        <div class="legend" id="leadLegend"></div>
       </div>
       <div class="etools">
         <input type="search" id="esearch" placeholder="Search electorate or candidate" aria-label="Search electorates">
@@ -674,7 +693,12 @@ function renderTug() {
   const apply = () => bar.querySelectorAll(".seg").forEach(el => el.style.flexBasis = el.dataset.basis);
   if (fresh.length && !REDUCED) requestAnimationFrame(() => requestAnimationFrame(apply)); else apply();
   $("#houseSize").textContent = `${TOTAL} seats${TOTAL > 120 ? ` · ${TOTAL - 120} overhang` : ""}`;
-  const nA = $("#nameA").value || "First bloc", nB = $("#nameB").value || "Second bloc";
+  // pinned mini copy
+  $("#miniA").textContent = a; $("#miniB").textContent = b;
+  $("#miniNameA").textContent = $("#nameA").value || "First bloc";
+  $("#miniNameB").textContent = $("#nameB").value || "Second bloc";
+  $("#miniTag").hidden = !SIM.on;
+  $("#miniBar").innerHTML = order.map(([p, faded]) => `<div class="${faded ? "faded" : ""}" style="flex:0 0 ${(p.seats / TOTAL * 100).toFixed(3)}%;background:${pc(p)}"></div>`).join("") + `<div style="flex:1 1 auto;background:none"></div>`;
 }
 
 function renderRows() {
@@ -790,14 +814,6 @@ function renderLeadStrip() {
   const counts = {};
   E.forEach(e => { if (e.lead && e.lead.votes) counts[e.lead.party] = (counts[e.lead.party] || 0) + 1; });
   const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  $("#leadBar").innerHTML = rows.map(([pid, n]) => {
-    const p = parties[pid];
-    return `<div style="flex:${n};background:${pc(p)}" title="${esc(pname(p))}: ${n}">${n >= 4 ? n : ""}</div>`;
-  }).join("");
-  $("#leadLegend").innerHTML = rows.map(([pid, n]) => {
-    const p = parties[pid];
-    return `<span style="display:inline-flex;gap:6px;align-items:center"><span class="sw" style="background:${pc(p)}"></span>${esc(pname(p))} <span class="num">${n}</span></span>`;
-  }).join("");
   const sel = $("#eparty"), keep = sel.value;
   sel.innerHTML = `<option value="">Any leading party</option>` +
     rows.map(([pid]) => `<option value="${pid}">${esc(pname(parties[pid]))} leading</option>`).join("");
@@ -1290,6 +1306,12 @@ $("#egrid").addEventListener("click", e => {
   location.hash = "e" + t.dataset.e;
 });
 addEventListener("hashchange", route);
+// Pin the mini chart in the tab bar once the hero's bar has scrolled under it
+if ("IntersectionObserver" in window) {
+  const nav = $("nav.tabs");
+  new IntersectionObserver(([en]) => nav.classList.toggle("pinned", !en.isIntersecting && en.boundingClientRect.top < 0),
+    { rootMargin: `-${Math.round(nav.getBoundingClientRect().height)}px 0px 0px 0px` }).observe($("#hero .tug-wrap"));
+}
 
 /* ---------- render + live refresh ---------- */
 let lastTotal = -1;
