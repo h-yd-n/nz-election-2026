@@ -501,9 +501,12 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
         <button class="btn" id="simApply" aria-pressed="false">Apply special votes projection</button>
       </div>
       <div class="simctl">
-        <label for="simVol">Special votes</label>
+        <label for="simVol">Special votes cast</label>
         <input type="range" id="simVol" min="0" max="900000" step="5000" value="400000">
         <span class="simout" id="simVolOut"></span>
+        <label for="simDis">Disallowed</label>
+        <input type="range" id="simDis" min="0" max="150000" step="1000" value="55000">
+        <span class="simout" id="simDisOut"></span>
         <label for="simSkew">Lean vs 2023</label>
         <input type="range" id="simSkew" min="0" max="200" step="10" value="100">
         <span class="simout" id="simSkewOut"></span>
@@ -525,7 +528,7 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
       <details class="method">
         <summary>How the projection works</summary>
         <ul>
-          <li>Volume: Commission estimate less expected disallowed votes.</li>
+          <li>Volume: specials cast less disallowed votes. Both default to Commission estimates. The 55,000 disallowed was estimated before the election, when the Commission expected about 700,000 specials, so it may be high.</li>
           <li>Split: each area's 2023 special-vote lean, scaled by the slider.</li>
           <li>Candidates: each party's specials follow how its voters split their candidate vote, estimated from that electorate's voting places. Seats re-run under MMP.</li>
         </ul>
@@ -988,7 +991,7 @@ dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 //     candidate vote) and the candidate's party lean (2023 candidate files don't list parties).
 // Seats are then re-run through MMP with projected electorate winners. Independent winners take seats
 // out of the 120 before the list allocation.
-const SIM = { on: false, target: null, skew: 1, result: null, lean: {} }; // lean: per-party national lean overrides
+const SIM = { on: false, target: null, dis: null, skew: 1, result: null, lean: {} }; // lean: per-party national lean overrides
 const SHRINK = 40; // pseudo-count, in expected special votes, pulling small local leans towards the average
 const normName = s => String(s || "").normalize("NFC").toLowerCase().replace(/[’']/g, "").replace(/\(.*?\)/g, "").replace(/[^a-zā-ū0-9 ]/g, " ").replace(/\b(party|the|nz|new zealand|aotearoa)\b/g, " ").replace(/\s+/g, " ").trim();
 const SP_ALIAS = { "The Opportunities Party (TOP)": "OPP", "Te Pāti Māori": "TPMAO", "Green Party": "GP", "Labour Party": "LAB", "National Party": "NAT", "ACT New Zealand": "ACT", "New Zealand First Party": "NZF", "Aotearoa Legalise Cannabis Party": "ALCP", "Animal Justice Party": "AJP" };
@@ -1062,16 +1065,18 @@ function outstandingOrdinary(e, O) {
 // Electoral Commission, "2026 General Election preliminary results", 7 Nov 2026 (elections.nz):
 // "approximately 399,365 including 96,947 overseas and dictation votes". The feed's total_special_votes
 // (297,418 at 100% counted) covers specials cast in New Zealand only. The Commission expects about 55,000
-// specials to be disallowed this time because enrolment closed earlier (1News, 16 Oct 2026); the model
-// works with valid votes, so the default subtracts them.
+// specials to be disallowed this time because enrolment closed earlier (1News, 16 Oct 2026). That was a
+// pre-election figure, made when it expected ~700,000 specials (RNZ, 10 Aug 2026), so it's a separate setting.
+// The model works with valid votes: specials cast less disallowed.
 const EC_SPECIALS = { total: 399365, overseas: 96947, disallowed: 55000 };
 const EC_TURNOUT = 74.6; // Commission's election-night turnout estimate, including estimated specials
-function feedSpecialsEstimate() {
+// Specials cast (before any are disallowed)
+function feedSpecialsCast() {
   const s = DATA.stats || {};
   if (!s.specials) return null;
-  if ((s.pctPlaces || 0) >= 100) return EC_SPECIALS.total - EC_SPECIALS.disallowed;
+  if ((s.pctPlaces || 0) >= 100) return EC_SPECIALS.total;
   // during the count: NZ specials so far, grossed up for places not yet in, plus overseas
-  return Math.round(s.specials / Math.max(0.05, s.pctPlaces / 100) + EC_SPECIALS.overseas - EC_SPECIALS.disallowed);
+  return Math.round(s.specials / Math.max(0.05, s.pctPlaces / 100) + EC_SPECIALS.overseas);
 }
 
 // Bootstrap refits of an electorate's party-to-candidate split, as J x K matrices (cached)
@@ -1128,7 +1133,9 @@ function runSpecials() {
   });
   const baseTotal = rows.reduce((a, r) => a + r.base, 0);
   const at2023 = Math.round(baseTotal);
-  const target = SIM.target == null ? (feedSpecialsEstimate() ?? at2023) : SIM.target;
+  const cast = SIM.target == null ? (feedSpecialsCast() ?? at2023 + EC_SPECIALS.disallowed) : SIM.target;
+  const dis = Math.min(cast, SIM.dis == null ? EC_SPECIALS.disallowed : SIM.dis);
+  const target = cast - dis; // valid specials
   const factor = baseTotal ? target / baseTotal : 0;
   const votes = {}, specials = {}, ordAdded = { v: 0 };
   DATA.parties.forEach(p => { votes[p.id] = 0; specials[p.id] = 0; });
@@ -1195,7 +1202,7 @@ function runSpecials() {
   const flips = winners.filter(w => !w.none && !same(w.now, w.lead));
   const close = winners.filter(w => !w.none && w.second && w.margin < 500).sort((a, b) => a.margin - b.margin);
   const house = Object.values(seats).reduce((a, b) => a + b, 0) + indep.length;
-  return { byE, parties: out, specTotal: target, at2023, feedEst: feedSpecialsEstimate(), ordAdded: ordAdded.v, flips, close, indep, noResult: winners.filter(w => w.none), house };
+  return { byE, parties: out, specTotal: target, cast, dis, at2023, ordAdded: ordAdded.v, flips, close, indep, noResult: winners.filter(w => w.none), house };
 }
 
 function renderSim() {
@@ -1205,8 +1212,11 @@ function renderSim() {
   SIM.result = runSpecials();
   const R = SIM.result; if (!R) return;
   const vol = $("#simVol");
-  if (SIM.target == null) vol.value = Math.round(R.specTotal / 5000) * 5000;
-  $("#simVolOut").innerHTML = `<b>${fmt(Math.round(R.specTotal / 1000) * 1000)}</b>${SIM.target == null ? " (Commission estimate)" : ""}`;
+  if (SIM.target == null) vol.value = Math.round(R.cast / 5000) * 5000;
+  if (SIM.dis == null) $("#simDis").value = R.dis;
+  const r1k = v => fmt(Math.round(v / 1000) * 1000);
+  $("#simVolOut").innerHTML = `<b>${r1k(R.cast)}</b>${SIM.target == null ? " (Commission estimate)" : ""}`;
+  $("#simDisOut").innerHTML = `<b>${r1k(R.dis)}</b>${SIM.dis == null ? " (Commission estimate)" : ""} · ${R.cast ? (R.dis / R.cast * 100).toFixed(1) : "0"}% of specials, leaving <b>${r1k(R.specTotal)}</b> to count`;
   $("#simSkewOut").textContent = SIM.skew === 1 ? "2023" : SIM.skew === 0 ? "None" : `${Math.round(SIM.skew * 100)}%`;
   const rows = R.parties.filter(p => p.seats > 0 || DATA.parties.some(q => q.id === p.id && q.seats > 0)).sort((a, b) => b.pct - a.pct);
   const now = id => DATA.parties.find(p => p.id === id);
@@ -1275,11 +1285,12 @@ $("#pleanGrid").addEventListener("click", ev => {
 });
 
 $("#simVol").addEventListener("input", e => { SIM.target = +e.target.value; refreshParl(); });
+$("#simDis").addEventListener("input", e => { SIM.dis = +e.target.value; refreshParl(); });
 $("#simSkew").addEventListener("input", e => { SIM.skew = +e.target.value / 100; refreshParl(); });
 $("#simApply").addEventListener("click", () => { SIM.on = !SIM.on; refreshParl(); });
 $("#eSimToggle").addEventListener("click", () => { SIM.on = !SIM.on; refreshParl(); });
 $("#simOff").addEventListener("click", () => { SIM.on = false; refreshParl(); });
-$("#simReset").addEventListener("click", () => { SIM.target = null; SIM.skew = 1; SIM.lean = {}; $("#simSkew").value = 100; refreshParl(); });
+$("#simReset").addEventListener("click", () => { SIM.target = null; SIM.dis = null; SIM.skew = 1; SIM.lean = {}; $("#simSkew").value = 100; refreshParl(); });
 
 /* ---------- routing ---------- */
 function route() {
