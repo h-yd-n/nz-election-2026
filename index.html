@@ -241,6 +241,11 @@ nav.tabs { margin-top: 10px; }
 .chip:hover { border-color: var(--fg); }
 .chip .num { color: var(--muted); font-weight: 500; }
 .chips .zone.n .chip { border-style: dashed; }
+.chip { touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.chip.lifted { opacity: .3; }
+.chips.dragging .zone { min-height: 28px; min-width: 56px; outline: 1px dashed var(--line); outline-offset: 3px; border-radius: var(--r); }
+.chips.dragging .zone.over { outline: 2px solid var(--fg); }
+.chip.ghost { position: fixed; z-index: 50; pointer-events: none; margin: 0; box-shadow: 0 6px 18px rgba(0,0,0,.18); transform: rotate(-2deg); cursor: grabbing; }
 .chipreset { font-size: 12px; color: var(--muted); justify-self: start; }
 
 /* Coalition builder */
@@ -464,7 +469,7 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
       <div class="tug-bar" id="tugBar"></div>
       <div class="tug-line" title="Majority line"></div>
     </div>
-    <div class="chips" id="prows" aria-label="Parties by bloc. Select a party to move it."></div>
+    <div class="chips" id="prows" aria-label="Parties by bloc. Drag a party, or select it to move it."></div>
     <button class="linkbtn chipreset" id="presetBlocs">Reset blocs</button>
   </div>
 </section>
@@ -728,9 +733,9 @@ function renderRows() {
   const zone = k => seated.filter(p => (blocs[p.id] || "") === k);
   flip($("#prows"), ".chip", () => {
     $("#prows").innerHTML =
-      `<div class="zone a">${zone("A").map(chip).join("")}</div>` +
-      `<div class="zone n">${zone("").map(chip).join("")}</div>` +
-      `<div class="zone b">${zone("B").reverse().map(chip).join("")}</div>`;
+      `<div class="zone a" data-z="A">${zone("A").map(chip).join("")}</div>` +
+      `<div class="zone n" data-z="">${zone("").map(chip).join("")}</div>` +
+      `<div class="zone b" data-z="B">${zone("B").reverse().map(chip).join("")}</div>`;
   }, "p");
 }
 
@@ -1317,7 +1322,55 @@ function route() {
   el.value = store.get("nzev-name" + k, el.value);
   el.addEventListener("input", () => { store.set("nzev-name" + k, el.value); renderTug(); renderRows(); });
 });
+// Drag a chip into another bloc. Pointer events cover mouse and touch; chips use touch-action: pan-y
+// so a vertical swipe still scrolls the page and a sideways drag moves the party.
+let drag = null, dragJustEnded = false;
+const zoneAt = (x, y) => document.elementFromPoint(x, y)?.closest("#prows .zone");
+$("#prows").addEventListener("pointerdown", e => {
+  const b = e.target.closest("button[data-p]");
+  if (!b || (e.pointerType === "mouse" && e.button !== 0)) return;
+  drag = { b, id: e.pointerId, x: e.clientX, y: e.clientY, ghost: null };
+});
+addEventListener("pointermove", e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  if (!drag.ghost) {
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
+    const r = drag.b.getBoundingClientRect();
+    drag.dx = drag.x - r.left; drag.dy = drag.y - r.top;
+    drag.ghost = drag.b.cloneNode(true);
+    drag.ghost.classList.add("ghost"); drag.ghost.removeAttribute("id");
+    drag.ghost.style.width = r.width + "px";
+    document.body.appendChild(drag.ghost);
+    drag.b.classList.add("lifted");
+    $("#prows").classList.add("dragging");
+    try { drag.b.setPointerCapture(e.pointerId); } catch {}
+  }
+  e.preventDefault();
+  drag.ghost.style.left = e.clientX - drag.dx + "px";
+  drag.ghost.style.top = e.clientY - drag.dy + "px";
+  const z = zoneAt(e.clientX, e.clientY);
+  $("#prows").querySelectorAll(".zone").forEach(el => el.classList.toggle("over", el === z));
+});
+function endDrag(e, drop) {
+  if (!drag || e.pointerId !== drag.id) return;
+  const d = drag; drag = null;
+  if (!d.ghost) return;
+  const z = drop ? zoneAt(e.clientX, e.clientY) : null;
+  d.ghost.remove();
+  d.b.classList.remove("lifted");
+  $("#prows").classList.remove("dragging");
+  $("#prows").querySelectorAll(".zone.over").forEach(el => el.classList.remove("over"));
+  dragJustEnded = true; setTimeout(() => dragJustEnded = false, 0);
+  if (z && (blocs[d.b.dataset.p] || "") !== z.dataset.z) {
+    blocs[d.b.dataset.p] = z.dataset.z;
+    store.set("nzev-blocs", blocs);
+    renderAllParl();
+  }
+}
+addEventListener("pointerup", e => endDrag(e, true));
+addEventListener("pointercancel", e => endDrag(e, false));
 $("#prows").addEventListener("click", e => {
+  if (dragJustEnded) return;
   const b = e.target.closest("button[data-p]"); if (!b) return;
   const next = { A: "", "": "B", B: "A" };
   blocs[b.dataset.p] = next[blocs[b.dataset.p] || ""];
