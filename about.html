@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en-NZ">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>About · Election 2026 specials projection</title>
+<meta name="description" content="How the NZ 2026 election specials projection works: data sources, seat allocation, the special votes model and its limitations.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://h-yd-n.github.io/nz-election-2026/about.html">
+<meta property="og:title" content="About · Election 2026 specials projection">
+<meta property="og:description" content="How the NZ 2026 election specials projection works: data sources, seat allocation, the special votes model and its limitations.">
+<meta property="og:image" content="https://h-yd-n.github.io/nz-election-2026/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Same tokens as template.html */
+:root {
+  --bg: #ffffff; --surface: #f4f5f6; --fg: #15171a; --muted: #5c636c; --faint: #949ba4; --line: #e2e4e7;
+  --f-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101214; --surface: #181b1e; --fg: #eceef0; --muted: #a3a9b0; --faint: #6c737b; --line: #2a2e33;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101214; --surface: #181b1e; --fg: #eceef0; --muted: #a3a9b0; --faint: #6c737b; --line: #2a2e33;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--f-body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  max-width: 760px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; font-weight: 700; }
+h1 { font-size: clamp(30px, 4.6vw, 42px); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; }
+h2 { font-size: 22px; line-height: 1.2; margin-top: 40px; padding-top: 14px; border-top: 3px solid var(--fg); }
+p, ul, ol { margin: 12px 0 0; }
+ul, ol { padding-left: 22px; display: grid; gap: 6px; }
+a { color: inherit; text-underline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.back { display: inline-block; font-size: 13.5px; font-weight: 600; color: var(--muted); text-decoration: none; margin-bottom: 14px; }
+.back:hover { color: var(--fg); }
+header { padding-block: 28px 0; }
+.dek { color: var(--muted); font-size: 15px; }
+.tablewrap { overflow-x: auto; margin-top: 14px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.45; min-width: 560px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line); }
+th { font-size: 11.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.date { color: var(--muted); white-space: nowrap; }
+footer { margin-top: 48px; padding-block: 22px 40px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+<header>
+  <a class="back" href="./">← Back to results</a>
+  <h1>About this site</h1>
+</header>
+
+<main>
+<h2>What this is</h2>
+<p>This site shows the preliminary 2026 general election results and projects how special votes could change them. It is an independent, unofficial project. Official results are due from the Electoral Commission on 27 November 2026.</p>
+<p>It has three views, with a seat chart above them that updates as you change settings:</p>
+<ul>
+  <li><strong>Parliament:</strong> seats by party, overhang, and how far each party's vote would need to move to gain or lose a seat.</li>
+  <li><strong>Electorates:</strong> every electorate's candidate result, with the projection applied when it's switched on.</li>
+  <li><strong>Specials:</strong> the special votes projection, with settings for how many specials there are, how many are disallowed and how they lean.</li>
+</ul>
+<p>You can group parties into two blocs to see which side reaches a majority.</p>
+
+<h2>Data sources</h2>
+<p>All 2026 results come from the Electoral Commission's public results feed. The projection also uses 2023 results and two news reports.</p>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Source</th><th>What it provides</th><th>Used for</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><a href="https://media.election.net.nz/xml/">Electoral Commission results feed</a></td>
+      <td>2026 preliminary party and candidate votes, by electorate and by voting place</td>
+      <td>All 2026 results; voting-place data for the candidate vote split</td>
+    </tr>
+    <tr>
+      <td><a href="https://elections.nz/media-and-news/2026/2026-general-election-preliminary-results">Electoral Commission preliminary results release</a> <span class="date">(7 Nov 2026)</span></td>
+      <td>Estimated special votes: about 399,365, including 96,947 overseas and dictation votes</td>
+      <td>Default number of specials cast</td>
+    </tr>
+    <tr>
+      <td><a href="https://archive.electionresults.govt.nz/">2023 official results archive</a></td>
+      <td>2023 party and candidate votes, split into ordinary and special votes, by electorate and voting place</td>
+      <td>How specials leaned in 2023; matching 2026 electorates to 2023 areas</td>
+    </tr>
+    <tr>
+      <td><a href="https://www.1news.co.nz/2026/10/16/how-the-new-enrolment-rules-could-affect-the-election-result/">1News</a> <span class="date">(16 Oct 2026)</span></td>
+      <td>Commission estimate of about 55,000 disallowed specials</td>
+      <td>Default disallowed share</td>
+    </tr>
+    <tr>
+      <td><a href="https://www.rnz.co.nz/news/politics/953100/voters-digest-election-2026-by-the-numbers">RNZ</a> <span class="date">(10 Aug 2026)</span></td>
+      <td>Commission expectation of about 700,000 specials</td>
+      <td>Default disallowed share</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2>How seats are worked out</h2>
+<p>Seats follow normal MMP rules:</p>
+<ul>
+  <li><strong>Who qualifies:</strong> parties with at least 5% of the party vote, or at least one electorate seat.</li>
+  <li><strong>Allocation:</strong> the 120 seats are shared among qualifying parties using the Sainte-Laguë method. An independent electorate winner takes one of the 120, leaving fewer to share.</li>
+  <li><strong>Overhang:</strong> a party that wins more electorates than its party vote entitles it to keeps them. Parliament grows by that many seats, as it did this election (131 seats on preliminary results).</li>
+</ul>
+<p><strong>Seat ±</strong> on the Parliament tab shows how many percentage points of party vote a party would need to gain its next seat, or could lose before dropping one.</p>
+
+<h2>How the special votes projection works</h2>
+<p>The projection estimates how many valid specials there are, where they were cast, and which parties they favour, all based on how specials behaved in 2023. It then reruns the seat allocation and the electorate races.</p>
+<ol>
+  <li><strong>How many:</strong> specials cast (the Commission's 399,365 by default) minus disallowed votes. Disallowed defaults to 8% of specials cast, about 32,000, leaving about 367,000 to count. The 8% comes from the Commission's pre-election expectation of about 55,000 disallowed out of roughly 700,000 specials.</li>
+  <li><strong>Where:</strong> each electorate gets a share of the total in proportion to its 2026 ordinary vote and the rate at which its area cast specials in 2023.</li>
+  <li><strong>Which parties:</strong> in each area, a party's 2023 lean is its share of specials divided by its share of ordinary votes. Specials are split in proportion to each party's 2026 vote multiplied by that lean. Leans from small numbers of votes are pulled towards the party's national average, so one-off local results don't dominate.</li>
+  <li><strong>Matching areas:</strong> boundaries changed between elections, so each 2026 general electorate takes its 2023 profile from the voting places inside it, weighted by their 2023 votes. That needs at least 60% of its places matched. Otherwise it uses the 2023 electorate with the same name, and failing that the national average. Māori electorates use the same-name match first.</li>
+</ol>
+<p>The settings adjust these steps:</p>
+<ul>
+  <li><strong>Special votes cast</strong> and <strong>Disallowed</strong> change the total.</li>
+  <li><strong>Lean vs 2023</strong> scales every lean together: 0% means specials split like ordinary votes, 100% repeats 2023, 200% doubles it.</li>
+  <li><strong>Adjust lean by party</strong> sets one party's national lean. Its lean in each area is scaled to match, keeping the local pattern. Because specials are shared out in proportion, raising one party lowers the rest.</li>
+</ul>
+
+<h2>How electorate specials are split between candidates</h2>
+<p>Candidate specials follow an estimate of how each party's voters split their candidate vote in that electorate. This matters where a party has no candidate. In Hamilton East, for example, Green party voters' specials have to go to other candidates.</p>
+<ol>
+  <li><strong>The split:</strong> for each electorate, the site estimates what share of each party's voters backed each candidate. It finds the shares that best reproduce the party and candidate totals at every voting place, fitted by iterative proportional fitting. This is ecological inference: individual ballots aren't published, so the split is inferred from totals.</li>
+  <li><strong>Applying it:</strong> each party's projected specials in the electorate are passed through that split to the candidates.</li>
+  <li><strong>Total candidate specials:</strong> scaled by the area's 2023 ratio of candidate specials to party specials, since some special voters cast only a party vote.</li>
+</ol>
+<p>Where there aren't enough voting places to fit a split, candidates take specials in line with their own party's lean instead.</p>
+
+<h2>Limitations</h2>
+<p>The projection is a scenario based on 2023, not a forecast. Treat close seats as uncertain.</p>
+<ul>
+  <li><strong>2023 may not repeat:</strong> special voters in 2026 may lean differently, especially as the new enrolment rules changed who casts a special vote.</li>
+  <li><strong>Disallowed votes are uncertain:</strong> the 55,000 estimate was made before the election, and it is reported in the news rather than in a Commission document I could find. The actual figure comes with the official results.</li>
+  <li><strong>The candidate split is inferred:</strong> it comes from voting-place totals, not individual ballots, so it can be wrong where voting places are few or similar to each other.</li>
+  <li><strong>Specials are assumed valid at the same rate everywhere:</strong> disallowed votes are taken off the total before it is shared out. In practice they likely cluster among certain groups, which could affect some parties and electorates more than others.</li>
+  <li><strong>Projected seats are sensitive:</strong> the lean setting moves results more than any other setting. In a seat decided by a few hundred votes, small changes in assumptions can flip it.</li>
+</ul>
+<p>The official results on 27 November will replace all of this. Corrections or comments are welcome to <a href="mailto:haydenem@gmail.com">haydenem@gmail.com</a>.</p>
+</main>
+
+<footer>
+  <a href="./">Back to results</a>
+</footer>
+</div>

@@ -117,6 +117,8 @@ details.method ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
 /* Masthead */
 .mast { padding-block: 28px 0; display: grid; gap: 14px; }
 .mast-top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+.aboutlink { font-size: 13.5px; font-weight: 600; color: var(--muted); }
+.aboutlink:hover { color: var(--fg); }
 .kicker { font-size: 12.5px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
 .mast h1 { font-size: clamp(30px, 4.6vw, 46px); font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
 .status { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; }
@@ -433,6 +435,7 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
 <header class="mast wrap">
   <div class="mast-top">
     <h1>2026 General Election</h1>
+    <a class="aboutlink" href="about.html">About and methods</a>
   </div>
   <div class="countbar">
     <div class="track"><div class="fill" id="countFill" style="width:0"></div></div>
@@ -565,7 +568,7 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
 
 <div class="wrap">
   <footer>
-    <div>Data: Electoral Commission, 2026 feed and 2023 archive.</div>
+    <div>Data: Electoral Commission, 2026 feed and 2023 archive. <a href="about.html">About and methods</a></div>
   </footer>
 </div>
 
