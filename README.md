@@ -17,3 +17,7 @@ This pulls the Electoral Commission feed (https://media.election.net.nz/xml/), e
 - `results2023.json`, `specials2023.json`: 2023 results and special votes from archive.electionresults.govt.nz
 - `vpcache.json`, `transfers.json`: cached voting-place results and the fitted party-to-candidate vote splits
 - `history.json`, `nz.json`: election-night history and coastline (not shown on the page now)
+
+## Share image
+
+`og.png` is rendered from `og-card.html`, which has its figures typed in. The render command is in a comment at the top of that file.
