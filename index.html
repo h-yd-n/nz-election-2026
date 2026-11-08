@@ -1306,11 +1306,16 @@ $("#egrid").addEventListener("click", e => {
   location.hash = "e" + t.dataset.e;
 });
 addEventListener("hashchange", route);
-// Pin the mini chart in the tab bar once the hero's bar has scrolled under it
-if ("IntersectionObserver" in window) {
-  const nav = $("nav.tabs");
-  new IntersectionObserver(([en]) => nav.classList.toggle("pinned", !en.isIntersecting && en.boundingClientRect.top < 0),
-    { rootMargin: `-${Math.round(nav.getBoundingClientRect().height)}px 0px 0px 0px` }).observe($("#hero .tug-wrap"));
+// Pin the mini chart under the tab bar once the hero's seat bar has scrolled beneath it
+{
+  const nav = $("nav.tabs"), bar = $("#hero .tug-wrap");
+  let queued = false;
+  // the stuck tab bar covers 0 to its own height, so pin once the hero's bar has gone under it
+  const check = () => { queued = false; nav.classList.toggle("pinned", bar.getBoundingClientRect().bottom < nav.offsetHeight); };
+  const queue = () => { if (!queued) { queued = true; requestAnimationFrame(check); } };
+  addEventListener("scroll", queue, { passive: true });
+  addEventListener("resize", queue);
+  check();
 }
 
 /* ---------- render + live refresh ---------- */
