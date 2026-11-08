@@ -528,7 +528,7 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
       <details class="method">
         <summary>How the projection works</summary>
         <ul>
-          <li>Volume: specials cast less disallowed votes. Both default to Commission estimates. The 55,000 disallowed was estimated before the election, when the Commission expected about 700,000 specials, so it may be high.</li>
+          <li>Volume: specials cast (Commission estimate) less disallowed votes. Disallowed defaults to 8% of specials: before the election the Commission expected about 55,000 of roughly 700,000 specials to be disallowed.</li>
           <li>Split: each area's 2023 special-vote lean, scaled by the slider.</li>
           <li>Candidates: each party's specials follow how its voters split their candidate vote, estimated from that electorate's voting places. Seats re-run under MMP.</li>
         </ul>
@@ -1069,6 +1069,8 @@ function outstandingOrdinary(e, O) {
 // pre-election figure, made when it expected ~700,000 specials (RNZ, 10 Aug 2026), so it's a separate setting.
 // The model works with valid votes: specials cast less disallowed.
 const EC_SPECIALS = { total: 399365, overseas: 96947, disallowed: 55000 };
+// Default disallowed share: the Commission's 55,000 against the ~700,000 specials it then expected is about 8%
+const DIS_SHARE = 0.08;
 const EC_TURNOUT = 74.6; // Commission's election-night turnout estimate, including estimated specials
 // Specials cast (before any are disallowed)
 function feedSpecialsCast() {
@@ -1134,7 +1136,7 @@ function runSpecials() {
   const baseTotal = rows.reduce((a, r) => a + r.base, 0);
   const at2023 = Math.round(baseTotal);
   const cast = SIM.target == null ? (feedSpecialsCast() ?? at2023 + EC_SPECIALS.disallowed) : SIM.target;
-  const dis = Math.min(cast, SIM.dis == null ? EC_SPECIALS.disallowed : SIM.dis);
+  const dis = Math.min(cast, SIM.dis == null ? Math.round(cast * DIS_SHARE) : SIM.dis);
   const target = cast - dis; // valid specials
   const factor = baseTotal ? target / baseTotal : 0;
   const votes = {}, specials = {}, ordAdded = { v: 0 };
@@ -1213,10 +1215,10 @@ function renderSim() {
   const R = SIM.result; if (!R) return;
   const vol = $("#simVol");
   if (SIM.target == null) vol.value = Math.round(R.cast / 5000) * 5000;
-  if (SIM.dis == null) $("#simDis").value = R.dis;
+  if (SIM.dis == null) $("#simDis").value = Math.round(R.dis / 1000) * 1000;
   const r1k = v => fmt(Math.round(v / 1000) * 1000);
   $("#simVolOut").innerHTML = `<b>${r1k(R.cast)}</b>${SIM.target == null ? " (Commission estimate)" : ""}`;
-  $("#simDisOut").innerHTML = `<b>${r1k(R.dis)}</b>${SIM.dis == null ? " (Commission estimate)" : ""} · ${R.cast ? (R.dis / R.cast * 100).toFixed(1) : "0"}% of specials, leaving <b>${r1k(R.specTotal)}</b> to count`;
+  $("#simDisOut").innerHTML = `<b>${r1k(R.dis)}</b> · ${R.cast ? (R.dis / R.cast * 100).toFixed(1) : "0"}% of specials${SIM.dis == null ? " (default)" : ""}, leaving <b>${r1k(R.specTotal)}</b> to count`;
   $("#simSkewOut").textContent = SIM.skew === 1 ? "2023" : SIM.skew === 0 ? "None" : `${Math.round(SIM.skew * 100)}%`;
   const rows = R.parties.filter(p => p.seats > 0 || DATA.parties.some(q => q.id === p.id && q.seats > 0)).sort((a, b) => b.pct - a.pct);
   const now = id => DATA.parties.find(p => p.id === id);
