@@ -315,6 +315,11 @@ nav.tabs { margin-top: 10px; }
 .simout { color: var(--muted); font-size: 13px; }
 .simout b { color: var(--fg); }
 .simsub { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; }
+.simtoast { position: fixed; left: 50%; bottom: 16px; transform: translate(-50%, 8px); z-index: 50; width: max-content; max-width: calc(100vw - 32px); box-sizing: border-box;
+  display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 8px; font-size: 14px;
+  background: var(--ink); color: var(--on-ink); box-shadow: 0 4px 16px rgba(0,0,0,.2); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+.simtoast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.simtoast button { background: none; border: 0; padding: 0; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
 .simdek { margin: 0 0 20px; } .simdek p { margin: 0 0 8px; } .simdek .btn { margin-top: 6px; }
 .plean { margin-top: 14px; font-size: 13.5px; }
 .plean summary { cursor: pointer; font-weight: 600; width: fit-content; }
@@ -503,6 +508,7 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
     </div>
   </section>
 
+  <div class="simtoast" id="simToast" role="status" aria-live="polite"><span>Projection turned on. The seat chart now includes projected specials.</span><button type="button" id="simToastUndo">Undo</button></div>
   <section class="view" id="view-specials" hidden>
     <div class="block" id="sim" hidden>
       <div class="dek simdek">
@@ -1292,13 +1298,23 @@ $("#pleanGrid").addEventListener("click", ev => {
   const cur = SIM.lean[pid] != null ? SIM.lean[pid] : natLean(pid);
   const next = Math.min(LEAN_MAX, Math.max(LEAN_MIN, Math.round((cur + LEAN_STEP * +b.dataset.d) / LEAN_STEP) * LEAN_STEP));
   SIM.lean[pid] = +next.toFixed(2);
+  simAutoOn();
   refreshParl();
   const again = $(`#pleanGrid .pl[data-pid="${pid}"] button[data-d="${b.dataset.d}"]`); if (again) again.focus(); // keep keyboard focus after re-render
 });
 
-$("#simVol").addEventListener("input", e => { SIM.target = +e.target.value; refreshParl(); });
-$("#simDis").addEventListener("input", e => { SIM.dis = +e.target.value; refreshParl(); });
-$("#simSkew").addEventListener("input", e => { SIM.skew = +e.target.value / 100; refreshParl(); });
+// Changing a setting switches the projection on; say so, since the seat chart is off-screen here.
+let toastTimer = null;
+function simAutoOn() {
+  if (SIM.on) return;
+  SIM.on = true;
+  const t = $("#simToast"); t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 6000);
+}
+$("#simToastUndo").addEventListener("click", () => { $("#simToast").classList.remove("show"); SIM.on = false; refreshParl(); });
+$("#simVol").addEventListener("input", e => { SIM.target = +e.target.value; simAutoOn(); refreshParl(); });
+$("#simDis").addEventListener("input", e => { SIM.dis = +e.target.value; simAutoOn(); refreshParl(); });
+$("#simSkew").addEventListener("input", e => { SIM.skew = +e.target.value / 100; simAutoOn(); refreshParl(); });
 $("#simApply").addEventListener("click", () => { SIM.on = !SIM.on; refreshParl(); });
 $("#eSimToggle").addEventListener("click", () => { SIM.on = !SIM.on; refreshParl(); });
 $("#simOff").addEventListener("click", () => { SIM.on = false; refreshParl(); });
