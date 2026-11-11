@@ -1292,13 +1292,14 @@ $("#pleanGrid").addEventListener("click", ev => {
   const cur = SIM.lean[pid] != null ? SIM.lean[pid] : natLean(pid);
   const next = Math.min(LEAN_MAX, Math.max(LEAN_MIN, Math.round((cur + LEAN_STEP * +b.dataset.d) / LEAN_STEP) * LEAN_STEP));
   SIM.lean[pid] = +next.toFixed(2);
+  SIM.on = true; // adjusting a setting implies wanting to see it in the seat chart
   refreshParl();
   const again = $(`#pleanGrid .pl[data-pid="${pid}"] button[data-d="${b.dataset.d}"]`); if (again) again.focus(); // keep keyboard focus after re-render
 });
 
-$("#simVol").addEventListener("input", e => { SIM.target = +e.target.value; refreshParl(); });
-$("#simDis").addEventListener("input", e => { SIM.dis = +e.target.value; refreshParl(); });
-$("#simSkew").addEventListener("input", e => { SIM.skew = +e.target.value / 100; refreshParl(); });
+$("#simVol").addEventListener("input", e => { SIM.target = +e.target.value; SIM.on = true; refreshParl(); });
+$("#simDis").addEventListener("input", e => { SIM.dis = +e.target.value; SIM.on = true; refreshParl(); });
+$("#simSkew").addEventListener("input", e => { SIM.skew = +e.target.value / 100; SIM.on = true; refreshParl(); });
 $("#simApply").addEventListener("click", () => { SIM.on = !SIM.on; refreshParl(); });
 $("#eSimToggle").addEventListener("click", () => { SIM.on = !SIM.on; refreshParl(); });
 $("#simOff").addEventListener("click", () => { SIM.on = false; refreshParl(); });
