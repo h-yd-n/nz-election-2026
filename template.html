@@ -418,6 +418,43 @@ dialog.detail[open] { animation: slide .2s ease; }
 .lrow .strong { font-weight: 700; }
 @media (max-width: 480px) { .lrow { grid-template-columns: 58px 46px 46px minmax(0, 1fr) 38px; gap: 6px; } }
 
+/* Final results: prelim vs 2023-lean expectation vs actual specials, as a dot plot */
+.dp { --dpbg: var(--bg); display: grid; gap: 0; font-size: 13px; font-variant-numeric: tabular-nums; }
+.dprow { display: grid; grid-template-columns: 84px minmax(0, 1fr) 56px 60px; gap: 10px; align-items: center; min-height: 28px; border-bottom: 1px solid var(--line); }
+.dprow:hover { background: var(--track); }
+.dprow.dhead { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; border-bottom: 1px solid var(--fg); min-height: 0; padding-bottom: 4px; }
+.dprow.dhead:hover, .dprow.daxis:hover { background: none; }
+.dprow.daxis { border: 0; min-height: 18px; font-size: 11px; color: var(--muted); }
+.dprow .r { text-align: right; }
+.dprow .lname { display: flex; gap: 6px; align-items: center; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dtrack { position: relative; height: 24px; }
+.dtrack .g { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.daxis .dtrack { height: 14px; }
+.daxis .dtrack span { position: absolute; transform: translateX(-50%); }
+.dtrack .cn { position: absolute; top: 11px; height: 2px; opacity: .45; }
+.dm { position: absolute; top: 50%; transform: translate(-50%, -50%); box-sizing: border-box; }
+.dm.pre { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--fg); background: var(--dpbg); }
+.dm.exp { width: 9px; height: 9px; background: var(--muted); transform: translate(-50%, -50%) rotate(45deg); box-shadow: 0 0 0 2px var(--dpbg); }
+.dm.act { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 2px var(--dpbg); }
+.dlegend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--muted); margin: 0 0 10px; }
+.dlegend span { display: inline-flex; align-items: center; gap: 7px; }
+.dlegend .dm { position: relative; top: auto; transform: none; display: inline-block; }
+.dlegend .dm.exp { transform: rotate(45deg); }
+.dlegend .dm.act { background: var(--fg); }
+.dprow .dv { font-weight: 700; }
+.dprow .up { color: var(--fg); } .dprow .dn { color: var(--fg); }
+.finsum { margin: 0 0 18px; max-width: 72ch; } .finsum p { margin: 0 0 8px; }
+.fintable { margin-top: 14px; font-size: 13.5px; } .fintable summary { cursor: pointer; font-weight: 600; width: fit-content; margin-bottom: 8px; }
+.chg { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.chg .pts { color: var(--muted); font-size: 12.5px; }
+.chg b { margin-left: 6px; }
+@media (max-width: 480px) {
+  .dprow { grid-template-columns: 44px minmax(0, 1fr) 40px; gap: 6px; } .dprow > :nth-child(4) { display: none; }
+  .dprow .lname .sw { display: none; }
+  .dm.pre { width: 9px; height: 9px; } .dm.exp { width: 7px; height: 7px; } .dm.act { width: 10px; height: 10px; }
+  .chg .pts { display: none; } .chg b { margin: 0; }
+}
+
 /* Tooltip */
 .tip {
   position: absolute; pointer-events: none; background: var(--raised); border: 1px solid var(--line); border-radius: var(--r);
@@ -491,7 +528,7 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
   <div class="wrap tabrow">
     <a href="#parliament" id="tab-parliament">Parliament</a>
     <a href="#electorates" id="tab-electorates">Electorates</a>
-    <a href="#specials" id="tab-specials"><span class="tl-wide">Special vote projection</span><span class="tl-short">Specials</span></a>
+    <a href="#specials" id="tab-specials"><span class="tl-wide" id="tabSpecLabel">Special vote projection</span><span class="tl-short">Specials</span></a>
   </div>
 </nav>
 
@@ -501,7 +538,7 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
       <h2>Party vote</h2>
       <div class="scroll-x">
         <table class="vtable">
-          <thead><tr><th>Party</th><th class="r hide-sm">Votes</th><th class="r">%</th><th class="barcell hide-sm"></th><th class="r hide-sm">Elect.</th><th class="r hide-sm">List</th><th class="r">Seats</th><th class="r" title="Electorate seats won beyond the party's party-vote entitlement"><span class="wide">Overhang</span><span class="short">Over.</span></th><th class="mcell"><span class="wide">Seat ± <span class="thint">(pts)</span></span><span class="short">Seat ±</span></th></tr></thead>
+          <thead><tr><th>Party</th><th class="r hide-sm">Votes</th><th class="r">%</th><th class="barcell hide-sm"></th><th class="r hide-sm">Elect.</th><th class="r hide-sm">List</th><th class="r">Seats</th><th class="r" title="Electorate seats won beyond the party's party-vote entitlement"><span class="wide">Overhang</span><span class="short">Over.</span></th><th class="mcell" id="lastCol"><span class="wide">Seat ± <span class="thint">(pts)</span></span><span class="short">Seat ±</span></th></tr></thead>
           <tbody id="vbody"></tbody>
         </table>
       </div>
@@ -510,6 +547,20 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
 
   <div class="simtoast" id="simToast" role="status" aria-live="polite"><span>Projection turned on. The seat chart now includes projected specials.</span><button type="button" id="simToastUndo">Undo</button></div>
   <section class="view" id="view-specials" hidden>
+    <div class="block" id="fin" hidden>
+      <h2>How special votes went</h2>
+      <div class="finsum" id="finSum"></div>
+      <div id="finChart"></div>
+      <details class="fintable">
+        <summary>Show as a table</summary>
+        <div class="scroll-x">
+          <table class="vtable">
+            <thead><tr><th>Party</th><th class="r"><span class="wide">Prelim. %</span><span class="short">Prelim.</span></th><th class="r"><span class="wide">2023 lean %</span><span class="short">2023</span></th><th class="r"><span class="wide">Specials %</span><span class="short">Spec.</span></th><th class="r hide-sm">Specials</th><th class="r"><span class="wide">Final %</span><span class="short">Final</span></th><th class="r">Seats</th></tr></thead>
+            <tbody id="finBody"></tbody>
+          </table>
+        </div>
+      </details>
+    </div>
     <div class="block" id="sim" hidden>
       <div class="dek simdek">
         <p>Special votes tend to favour some parties more than others, and this can change the final result once all votes are counted.</p>
@@ -656,6 +707,10 @@ function flip(container, sel, render, attr) {
 /* ---------- state derived from DATA ---------- */
 let parties = {}, seated = [], TOTAL = 0, MAJ = 0, E = [], circles = [];
 let blocs = store.get("nzev-blocs", {});
+// Final mode: the build embeds the election-night snapshot as DATA.prelim once official results are out
+const isFinal = () => !!(DATA && DATA.prelim);
+const prelimParty = id => (DATA.prelim.parties.find(p => p.id === id) || { votes: 0, pct: 0, seats: 0, elect: 0 });
+const prelimE = id => DATA.prelim.electorates.find(x => x.id === id);
 let focus = null;
 
 function derive(d, override) {
@@ -672,7 +727,9 @@ function derive(d, override) {
     const pvotes = sim ? Object.fromEntries(Object.entries(sim.party).map(([k, v]) => [k, Math.round(v.proj)])) : e.partyVotes;
     const [w, r] = cands;
     const tot = cands.reduce((a, c) => a + c.votes, 0);
-    return { ...e, candidates: cands, partyVotes: pvotes, partyVotesNow: e.partyVotes, sim, lead: w, second: r, candTotal: tot,
+    const was = isFinal() ? (prelimE(e.id) || {}).candidates?.[0] : null;
+    const changed = !!(was && w && !(was.name === w.name && was.party === w.party));
+    return { ...e, was, changed, candidates: cands, partyVotes: pvotes, partyVotesNow: e.partyVotes, sim, lead: w, second: r, candTotal: tot,
       margin: w ? w.votes - (r ? r.votes : 0) : 0,
       marginPct: w && tot ? (w.votes - (r ? r.votes : 0)) / tot * 100 : 0 };
   });
@@ -681,15 +738,16 @@ function derive(d, override) {
 /* ---------- header ---------- */
 function renderHeader() {
   const S = DATA.stats;
-  const isFinal = S.pctPlaces >= 100;
+  const done = S.pctPlaces >= 100;
+  const turnout = isFinal() && S.pctVotes ? S.pctVotes : EC_TURNOUT;
   $("#countFill").style.width = S.pctPlaces + "%";
   const first = !$("#facts").dataset.done;
   $("#facts").dataset.done = 1;
-  $("#facts").innerHTML = isFinal
+  $("#facts").innerHTML = done
     ? `<span><b class="num" id="fVotes"></b> votes</span><span><b class="num" id="fTurn"></b> turnout</span>`
     : `<span><b class="num">${S.pctPlaces}%</b> counted</span><span><b class="num" id="fVotes"></b> votes</span>`;
   tweenNum($("#fVotes"), S.votesCast, { from: first ? 0 : S.votesCast, dur: 900 });
-  if (isFinal) tweenNum($("#fTurn"), EC_TURNOUT, { from: first ? 0 : EC_TURNOUT, dur: 900, format: v => v.toFixed(1) + "%" });
+  if (done) tweenNum($("#fTurn"), turnout, { from: first ? 0 : turnout, dur: 900, format: v => v.toFixed(1) + "%" });
 }
 
 /* ---------- parliament ---------- */
@@ -753,7 +811,11 @@ function renderVotes() {
   const list = DATA.parties.filter(p => p.votes > 0).sort((a, b) => b.votes - a.votes);
   const base = mmpBase(list);
   const max = Math.max(...list.map(p => p.pct)) * 1.05;
-  $("#vbody").innerHTML = list.filter(p => p.seats > 0).map((p, i) => {
+  const fin = isFinal();
+  $("#lastCol").innerHTML = fin
+    ? `<span class="wide">Change from prelim.</span><span class="short">± prelim.</span>`
+    : `<span class="wide">Seat ± <span class="thint">(pts)</span></span><span class="short">Seat ±</span>`;
+  $("#vbody").innerHTML = list.filter(p => p.seats > 0 || (fin && prelimParty(p.id).seats > 0)).map((p, i) => {
     const out = p.seats === 0;
     return `<tr class="${out ? "below" : ""}" style="--i:${i}">
       <td><div class="pn"><span class="sw" style="background:${pc(p)}"></span><span title="${esc(p.name)}">${esc(pname(p))}</span></div></td>
@@ -764,9 +826,17 @@ function renderVotes() {
       <td class="r num hide-sm">${p.list || ""}</td>
       <td class="r num"><b>${p.seats || ""}</b></td>
       <td class="r num">${overhangCell(p, base)}</td>
-      <td class="mcell">${marginCell(p, base)}</td>
+      <td class="mcell">${fin ? changeCell(p) : marginCell(p, base)}</td>
     </tr>`;
   }).join("");
+}
+
+// Final results: party vote and seat change since election night
+function changeCell(p) {
+  const q = prelimParty(p.id), dp = p.pct - q.pct, ds = (p.seats || 0) - (q.seats || 0);
+  const pts = (dp > 0.0049 ? "+" : dp < -0.0049 ? "−" : "±") + Math.abs(dp).toFixed(2);
+  const seats = ds ? `<b class="${ds > 0 ? "up" : "dn"}">${ds > 0 ? "+" : "−"}${Math.abs(ds)} seat${Math.abs(ds) > 1 ? "s" : ""}</b>` : "";
+  return `<span class="chg" title="Election night: ${q.pct.toFixed(2)}%, ${q.seats || 0} seats"><span class="pts">${pts} pts</span>${seats}</span>`;
 }
 
 /* ---------- MMP seat margins ---------- */
@@ -877,7 +947,7 @@ function renderGrid() {
     const lw = e.candTotal ? e.lead.votes / e.candTotal * 100 : 0;
     const sw = e.candTotal && e.second ? e.second.votes / e.candTotal * 100 : 0;
     return `<button class="tile" style="--pc:${col};--i:${Math.min(i, 24)}" data-e="${e.id}">
-      ${(() => { const bits = [e.maori ? "Māori" : "", e.sim && e.sim.flip ? `<span class="flipchip">Flips</span>` : "", e.sim && e.sim.fits && e.sim.holds < 0.8 ? `<span class="tossup">Toss-up</span>` : ""].filter(Boolean); return `<div>${bits.length ? `<div class="tag">${bits.join(" · ")}</div>` : ""}`; })()}
+      ${(() => { const bits = [e.maori ? "Māori" : "", e.changed ? `<span class="flipchip">Changed since election night</span>` : "", e.sim && e.sim.flip ? `<span class="flipchip">Flips</span>` : "", e.sim && e.sim.fits && e.sim.holds < 0.8 ? `<span class="tossup">Toss-up</span>` : ""].filter(Boolean); return `<div>${bits.length ? `<div class="tag">${bits.join(" · ")}</div>` : ""}`; })()}
       <div class="tname">${esc(e.name)}</div></div>
       <div class="tlead"><span class="sw" style="background:${col}"></span><span><b>${esc(e.lead ? person(e.lead.name).sur : "No votes yet")}</b> ${e.lead ? esc(pabbr(lp)) + " leads" : ""}</span></div>
       <div class="tmargin"><div style="width:${lw}%;background:${col}"></div><div style="width:${sw}%;background:${pc(sp)};opacity:.55"></div></div>
@@ -913,7 +983,7 @@ function openDetail(id) {
     return `<div class="pvrow"><span>${esc(pabbr(p))}</span><div class="bar"><div style="width:${(v / pvMax * 100).toFixed(2)}%;background:${pc(p)}"></div></div><span class="num" style="text-align:right">${share.toFixed(1)}%${sim && Math.abs(dlt) >= 0.05 ? ` <span class="dl">${dlt > 0 ? "+" : "−"}${Math.abs(dlt).toFixed(1)}</span>` : ""}</span></div>`;
   }).join("");
   const was = sim && sim.flip ? sim.from : null;
-  const status = was ? `Projected flip from ${person(was.name).full} (${pabbr(parties[was.party])})` : e.pctCounted < 100 ? "Leading" : "";
+  const status = e.changed ? `Won from ${esc(person(e.was.name).full)} (${esc(pabbr(parties[e.was.party]))}), who led on election night` : was ? `Projected flip from ${person(was.name).full} (${pabbr(parties[was.party])})` : e.pctCounted < 100 ? "Leading" : "";
   const simInfo = sim ? `<div class="simbadge"><span>+${fmt(Math.round(sim.S / 100) * 100)} projected specials</span><button class="linkbtn" id="dSimOff">Show election night</button></div>` : "";
   const tr = DATA.transfer && DATA.transfer[e.id];
   let splitHTML = "";
@@ -933,7 +1003,8 @@ function openDetail(id) {
   }
   const L23 = DATA.sp23 ? lean2023(e) : null;
   let leanHTML = "";
-  if (L23 && L23.rows.length) {
+  if (isFinal()) leanHTML = finalLeanHTML(e, L23);
+  else if (L23 && L23.rows.length) {
     const m = Math.max(4, ...L23.rows.map(r => Math.abs(r.diff)));
     const src = L23.from.slice(0, 3).map(([nm, f]) => `${esc(nm)}${f < 0.995 ? " (" + Math.round(f * 100) + "%)" : ""}`).join(", ");
     leanHTML = `<div class="dsec">
@@ -1225,6 +1296,8 @@ function runSpecials() {
 
 function renderSim() {
   const box = $("#sim");
+  $("#fin").hidden = true;
+  if (isFinal()) { box.hidden = true; SIM.on = false; SIM.result = null; renderFinal(); return; }
   if (!DATA.sp23) { box.hidden = true; SIM.result = null; SIM.on = false; return; }
   box.hidden = false;
   SIM.result = runSpecials();
@@ -1319,6 +1392,127 @@ $("#simApply").addEventListener("click", () => { SIM.on = !SIM.on; refreshParl()
 $("#eSimToggle").addEventListener("click", () => { SIM.on = !SIM.on; refreshParl(); });
 $("#simOff").addEventListener("click", () => { SIM.on = false; refreshParl(); });
 $("#simReset").addEventListener("click", () => { SIM.target = null; SIM.dis = null; SIM.skew = 1; SIM.lean = {}; $("#simSkew").value = 100; refreshParl(); });
+
+/* ---------- final results: how specials went ---------- */
+// The 2023-lean projection, run on the election-night count with default settings. Shares don't depend on volume.
+let PRE = null;
+function computePre() {
+  PRE = null; SPM = null;
+  if (!isFinal() || !DATA.sp23) return;
+  const fin = DATA, keep = { target: SIM.target, dis: SIM.dis, skew: SIM.skew, lean: SIM.lean };
+  DATA = { ...fin.prelim, sp23: fin.sp23 };
+  Object.assign(SIM, { target: null, dis: null, skew: 1, lean: {} });
+  try { SPM = prepSpecials(); PRE = runSpecials(); } catch (err) { console.error(err); PRE = null; }
+  finally { DATA = fin; Object.assign(SIM, keep); }
+}
+
+// Dot plot: election-night share (hollow), share the 2023 lean pointed to (grey diamond), actual specials (filled)
+function dotPlot(rows) {
+  const hasExp = rows.some(r => r.exp != null);
+  const raw = Math.max(1, ...rows.flatMap(r => [r.pre, r.exp || 0, r.act]));
+  const step = raw <= 10 ? 2 : raw <= 40 ? 5 : 10, max = Math.ceil(raw / step) * step;
+  const x = v => (Math.min(max, Math.max(0, v)) / max * 100).toFixed(2) + "%";
+  const ticks = Array.from({ length: max / step + 1 }, (_, i) => i * step);
+  const grid = ticks.map(t => `<i class="g" style="left:${x(t)}"></i>`).join("");
+  const sg = v => (v > 0.049 ? "+" : v < -0.049 ? "−" : "±") + Math.abs(v).toFixed(1);
+  const cmp = r => hasExp && r.exp != null ? r.act - r.exp : r.act - r.pre;
+  const legend = `<div class="dlegend">
+    <span><i class="dm pre"></i>Election night (prelim.)</span>
+    ${hasExp ? `<span><i class="dm exp"></i>Specials if they leaned like 2023</span>` : ""}
+    <span><i class="dm act"></i>Actual 2026 specials</span></div>`;
+  const body = rows.map(r => {
+    const a = Math.min(r.pre, r.act), b = Math.max(r.pre, r.act);
+    const tip = `${r.name}: election night ${r.pre.toFixed(1)}%${r.exp != null ? `, 2023 lean ${r.exp.toFixed(1)}%` : ""}, actual specials ${r.act.toFixed(1)}%`;
+    return `<div class="dprow" title="${esc(tip)}">
+      <span class="lname"><span class="sw" style="background:${r.color}"></span>${esc(r.label)}</span>
+      <span class="dtrack">${grid}
+        <i class="cn" style="left:${x(a)};width:calc(${x(b)} - ${x(a)});background:${r.color}"></i>
+        <i class="dm pre" style="left:${x(r.pre)}"></i>
+        ${r.exp != null ? `<i class="dm exp" style="left:${x(r.exp)}"></i>` : ""}
+        <i class="dm act" style="left:${x(r.act)};background:${r.color}"></i>
+      </span>
+      <span class="r num dv">${r.act.toFixed(1)}</span>
+      <span class="r num">${sg(cmp(r))}</span>
+    </div>`;
+  }).join("");
+  return `${legend}<div class="dp">
+    <div class="dprow dhead"><span></span><span>% of party vote</span><span class="r">Specials</span><span class="r">${hasExp ? "vs 2023" : "vs prelim."}</span></div>
+    ${body}
+    <div class="dprow daxis"><span></span><span class="dtrack">${ticks.map(t => `<span style="left:${x(t)}">${t}</span>`).join("")}</span><span></span><span></span></div>
+  </div>`;
+}
+
+// Rows for the dot plot from election-night votes, final votes and the 2023-lean projection's specials, by party id
+function specRows(preV, finV, expV, minPct, keep = () => false) {
+  const ids = [...new Set([...Object.keys(preV), ...Object.keys(finV)])];
+  const sum = o => Object.values(o).reduce((a, b) => a + b, 0) || 1;
+  const preT = sum(preV), expT = expV ? sum(expV) : 1;
+  const spec = Object.fromEntries(ids.map(id => [id, (finV[id] || 0) - (preV[id] || 0)]));
+  const specT = sum(spec);
+  const row = id => ({ id, pre: (preV[id] || 0) / preT * 100, exp: expV ? (expV[id] || 0) / expT * 100 : null, act: spec[id] / specT * 100, n: spec[id] });
+  const all = ids.map(row);
+  const shown = all.filter(r => keep(r.id) || Math.max(r.pre, r.act) >= minPct).sort((a, b) => (finV[b.id] || 0) - (finV[a.id] || 0));
+  const rest = all.filter(r => !shown.includes(r));
+  const out = shown.map(r => { const p = parties[r.id]; return { ...r, label: pabbr(p), name: pname(p), color: pc(p) }; });
+  if (rest.length) {
+    const s = k => rest.reduce((a, r) => a + (r[k] || 0), 0);
+    out.push({ id: "other", label: "Other", name: "Other parties", color: "var(--p-other)", pre: s("pre"), exp: expV ? s("exp") : null, act: s("act"), n: s("n") });
+  }
+  return { rows: out, specT };
+}
+
+function renderFinal() {
+  $("#fin").hidden = false;
+  const votes = list => Object.fromEntries(list.filter(p => p.votes > 0).map(p => [p.id, p.votes]));
+  const preV = votes(DATA.prelim.parties), finV = votes(DATA.parties);
+  const expV = PRE ? Object.fromEntries(PRE.parties.filter(p => p.specials > 0).map(p => [p.id, p.specials])) : null;
+  const seatedNowOrThen = id => (parties[id]?.seats || 0) > 0 || prelimParty(id).seats > 0;
+  const { rows, specT } = specRows(preV, finV, expV, 1, seatedNowOrThen);
+  $("#finChart").innerHTML = dotPlot(rows);
+  const named = rows.filter(r => r.id !== "other");
+  const sg = v => (v > 0 ? "+" : "−") + Math.abs(v).toFixed(1);
+  const lean = [...named].sort((a, b) => (b.act - b.pre) - (a.act - a.pre));
+  const up = lean.filter(r => r.act - r.pre >= 0.5).slice(0, 3), dn = lean.filter(r => r.act - r.pre <= -0.5).reverse().slice(0, 3);
+  const surpr = PRE ? [...named].filter(r => Math.abs(r.act - r.exp) >= 0.5).sort((a, b) => Math.abs(b.act - b.exp) - Math.abs(a.act - a.exp)).slice(0, 3) : [];
+  const list = (rs, f) => { const t = rs.map((r, i) => `${esc(r.name)} (${f(r, i)})`); return t.length > 1 ? t.slice(0, -1).join(", ") + " and " + t[t.length - 1] : t.join(""); };
+  const seatCh = DATA.parties.concat(DATA.prelim.parties.filter(q => !DATA.parties.some(p => p.id === q.id)))
+    .map(p => ({ p: parties[p.id] || p, d: (parties[p.id]?.seats || 0) - prelimParty(p.id).seats })).filter(x => x.d);
+  const flips = E.filter(e => e.changed);
+  $("#finSum").innerHTML = `
+    <p>The official count added <b>${fmt(Math.round(specT))}</b> party votes to the election-night total. Almost all of them are special votes; the rest are corrections to the ordinary count.</p>
+    ${up.length || dn.length ? `<p>Compared with their election-night share, specials favoured ${up.length ? list(up, (r, i) => sg(r.act - r.pre) + (i ? "" : " pts")) : "no party much"}${dn.length ? `, and ran against ${list(dn, (r, i) => sg(r.act - r.pre) + (i ? "" : " pts"))}` : ""}.</p>` : ""}
+    ${surpr.length ? `<p>Against how specials leaned in 2023, the biggest differences were ${list(surpr, (r, i) => sg(r.act - r.exp) + (i ? "" : " pts"))}.</p>` : ""}
+    <p>${seatCh.length ? `Seats changed: ${seatCh.map(x => `${esc(pname(x.p))} ${x.d > 0 ? "+" : "−"}${Math.abs(x.d)}`).join(", ")}.` : "No party's seat count changed."}
+    ${flips.length ? ` Electorates that changed hands: ${flips.map(e => `<a href="#e${e.id}">${esc(e.name)}</a>`).join(", ")}.` : ""}</p>`;
+  $("#finBody").innerHTML = rows.map(r => {
+    const p = parties[r.id], q = r.id === "other" ? null : prelimParty(r.id);
+    return `<tr>
+      <td><div class="pn"><span class="sw" style="background:${r.color}"></span><span>${esc(r.name)}</span></div></td>
+      <td class="r num">${r.pre.toFixed(1)}</td>
+      <td class="r num">${r.exp != null ? r.exp.toFixed(1) : "–"}</td>
+      <td class="r num"><b>${r.act.toFixed(1)}</b></td>
+      <td class="r num hide-sm">${fmt(Math.round(r.n))}</td>
+      <td class="r num">${p && r.id !== "other" ? p.pct.toFixed(2) : ""}</td>
+      <td class="r num">${q ? `${q.seats} → <b>${p ? p.seats : 0}</b>` : ""}</td>
+    </tr>`;
+  }).join("");
+}
+
+// Electorate detail: the same comparison for one electorate
+function finalLeanHTML(e, L23) {
+  const pe = prelimE(e.id); if (!pe) return "";
+  const proj = PRE && PRE.byE[e.id];
+  const expV = proj ? Object.fromEntries(Object.entries(proj.party).map(([k, v]) => [k, v.spec])) : null;
+  const { rows, specT } = specRows(pe.partyVotes, e.partyVotesNow, expV, 1);
+  if (specT <= 1) return "";
+  const from = (L23 && L23.from) || (proj && proj.prof.from) || [];
+  const src = from.slice(0, 3).map(([nm, f]) => `${esc(nm)}${f < 0.995 ? " (" + Math.round(f * 100) + "%)" : ""}`).join(", ");
+  return `<div class="dsec">
+    <h3>How specials went (party vote)</h3>
+    <p class="note">${fmt(Math.round(specT))} votes added since election night${src && expV ? ` · 2023 lean from ${src}` : ""}</p>
+    ${dotPlot(rows)}
+  </div>`;
+}
 
 /* ---------- routing ---------- */
 function route() {
@@ -1439,6 +1633,9 @@ function renderSimBars() {
 }
 function renderAll() {
   SPM = null;
+  derive(DATA);
+  computePre();
+  $("#tabSpecLabel").textContent = isFinal() ? "How special votes went" : "Special vote projection";
   renderHeader();
   refreshParl();
   derive(DATA);
@@ -1481,7 +1678,7 @@ function tick() {
   if (s === 0) checkForUpdates();
 }
 if (STATIC) {
-  $("#refreshText").textContent = "Preliminary. Official results 27 November.";
+  $("#refreshText").textContent = isFinal() ? "Official results, including special votes." : "Preliminary. Official results 27 November.";
   $("#refreshNow").hidden = true;
 } else {
   $("#refreshNow").onclick = checkForUpdates;

@@ -2,6 +2,11 @@
 
 Usage:  python3 build.py            (fetches https://media.election.net.nz/xml/)
         python3 build.py --local DIR (uses XML files already saved in DIR)
+        python3 build.py --base URL  (fetches the feed from another URL, ending in /)
+
+Official (final) results: when the feed's timestamp differs from the election-night snapshot in
+prelim2026.json, the build switches to final mode. It embeds that snapshot as DATA.prelim so the page
+can compare final against election night, and skips the voting-place fetch (no longer needed).
 
 The feed sends no CORS headers, so the page can't fetch it in the browser.
 This script embeds a snapshot of the data into template.html instead.
@@ -9,12 +14,15 @@ This script embeds a snapshot of the data into template.html instead.
 import json
 import sys
 import time
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 BASE = "https://media.election.net.nz/xml/"
+if "--base" in sys.argv:
+    BASE = sys.argv[sys.argv.index("--base") + 1].rstrip("/") + "/"
 HERE = Path(__file__).resolve().parent
 MAORI = {"Hauraki-Waikato", "Ikaroa-Rāwhiti", "Tāmaki Makaurau", "Te Tai Hauāuru",
          "Te Tai Tokerau", "Te Tai Tonga", "Waiariki"}
@@ -27,8 +35,18 @@ def loader():
 
     def fetch(name):
         req = urllib.request.Request(BASE + name, headers={"User-Agent": "election-viz-build"})
-        with urllib.request.urlopen(req, timeout=30) as r:
-            return ET.fromstring(r.read())
+        for attempt in range(4):
+            try:
+                with urllib.request.urlopen(req, timeout=30) as r:
+                    return ET.fromstring(r.read())
+            except urllib.error.HTTPError as exc:
+                if exc.code == 404 or attempt == 3:
+                    raise SystemExit(f"{BASE + name}: HTTP {exc.code}. Feed not up yet, or moved: "
+                                     f"try --base <url>") from exc
+            except (urllib.error.URLError, TimeoutError):
+                if attempt == 3:
+                    raise
+            time.sleep(2 * (attempt + 1))
     return fetch
 
 
@@ -305,7 +323,19 @@ def main():
         "parties": list(parties.values()),
         "electorates": electorates,
     }
-    if "--local" not in sys.argv:
+    # Final mode: the feed has moved on from the election-night snapshot
+    try:
+        prelim = json.loads((HERE / "prelim2026.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        prelim = None
+    final = bool(prelim) and prelim["updated"] != data["updated"]
+    if final:
+        data["prelim"] = prelim
+        try:
+            data["sp23"] = json.loads((HERE / "specials2023.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            pass
+    elif "--local" not in sys.argv:
         data["places"], vpc = voting_places(get("votingplaces.xml"), len(names))
         try:
             data["transfer"] = fit_transfers(vpc, electorates)
@@ -353,7 +383,8 @@ def main():
     # The page no longer has the map or trend lines: embed only what the specials model needs.
     data.pop("coast", None)
     data.pop("history", None)
-    data["places"] = [{k: pl[k] for k in ("id", "e", "t", "n", "v23") if k in pl} for pl in data.get("places", [])]
+    if "places" in data:
+        data["places"] = [{k: pl[k] for k in ("id", "e", "t", "n", "v23") if k in pl} for pl in data["places"]]
 
     raw = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     (HERE / "data.json").write_text(raw, encoding="utf-8")
@@ -366,6 +397,8 @@ def main():
         (pub / "index.html").write_text(out.replace("/*__STATIC__*/false", "true"), encoding="utf-8")
         print(f"Wrote {pub / 'index.html'} ({(pub / 'index.html').stat().st_size // 1024} KB)", flush=True)
     seats = sum(p["seats"] for p in data["parties"])
+    if final:
+        print("FINAL MODE: comparing against election-night snapshot " + prelim["updated"], flush=True)
     print(f"{time.strftime('%H:%M:%S')} built election.html + data.json: feed updated {data['updated']}, "
           f"{data['stats']['pctPlaces']}% counted, {seats} seats, {len(electorates)} electorates", flush=True)
 

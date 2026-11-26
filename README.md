@@ -12,10 +12,21 @@ This pulls the Electoral Commission feed (https://media.election.net.nz/xml/), e
 
 `python3 build.py --serve` runs a local live-refreshing copy on http://localhost:8765/election.html.
 
+## Official results
+
+`prelim2026.json` is the frozen election-night data. When the feed's timestamp no longer matches it, `build.py` switches to final mode: the Parliament tab shows change from prelim, and the specials tab and electorate cards compare election night, the 2023 specials lean and the actual 2026 specials. On release day:
+
+```bash
+python3 build.py --static
+```
+
+Check the output says `FINAL MODE`. If the feed has moved, pass `--base <url>` (folder holding election.xml). If it 404s, it isn't up yet.
+
 ## Data files
 
 - `results2023.json`, `specials2023.json`: 2023 results and special votes from archive.electionresults.govt.nz
 - `vpcache.json`, `transfers.json`: cached voting-place results and the fitted party-to-candidate vote splits
+- `prelim2026.json`: election-night snapshot, used for the final-vs-prelim comparison
 - `history.json`, `nz.json`: election-night history and coastline (not shown on the page now)
 
 ## Share image
