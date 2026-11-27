@@ -1,6 +1,6 @@
 """Pull the Electoral Commission results feed and rebuild election.html.
 
-Usage:  python3 build.py            (fetches https://media.election.net.nz/xml/)
+Usage:  python3 build.py            (fetches the official results feed)
         python3 build.py --local DIR (uses XML files already saved in DIR)
         python3 build.py --base URL  (fetches the feed from another URL, ending in /)
 
@@ -20,7 +20,7 @@ import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-BASE = "https://media.election.net.nz/xml/"
+BASE = "https://www.electionresults.govt.nz/electionresults_2026/xml/"  # official results; election night was https://media.election.net.nz/xml/
 if "--base" in sys.argv:
     BASE = sys.argv[sys.argv.index("--base") + 1].rstrip("/") + "/"
 HERE = Path(__file__).resolve().parent

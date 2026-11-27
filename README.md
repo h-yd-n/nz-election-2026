@@ -8,7 +8,7 @@ Live at https://h-yd-n.github.io/nz-election-2026/
 python3 build.py --static
 ```
 
-This pulls the Electoral Commission feed (https://media.election.net.nz/xml/), embeds it with the 2023 comparison data, and writes `index.html`. Commit both the source and `index.html`.
+This pulls the Electoral Commission feed (https://www.electionresults.govt.nz/electionresults_2026/xml/), embeds it with the 2023 comparison data, and writes `index.html`. Commit both the source and `index.html`.
 
 `python3 build.py --serve` runs a local live-refreshing copy on http://localhost:8765/election.html.
 
