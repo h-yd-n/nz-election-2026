@@ -418,6 +418,23 @@ dialog.detail[open] { animation: slide .2s ease; }
 .lrow .strong { font-weight: 700; }
 @media (max-width: 480px) { .lrow { grid-template-columns: 58px 46px 46px minmax(0, 1fr) 38px; gap: 6px; } }
 
+/* MPs */
+.mpnote { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 72ch; }
+#mpsearch { width: min(100%, 360px); font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); }
+.mpgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 28px 32px; align-items: start; }
+.mpcard h3 { display: flex; align-items: baseline; gap: 8px; margin: 0 0 2px; font-family: var(--f-display); font-size: 19px; padding-top: 8px; border-top: 4px solid var(--pc); }
+.mpcard h3 .num { margin-left: auto; }
+.mpcard .msub { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
+.mpcard h4 { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 12px 0 4px; }
+.mplist { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.mplist li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 6px; padding: 4px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.mplist .rk { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.mplist .w small { color: var(--muted); }
+.mplist .newtag { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--good); margin-left: 4px; }
+.mplist.next li { color: var(--muted); border-bottom-style: dashed; }
+.mpout { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+.mpcard.dim { display: none; }
+
 /* Final results: prelim vs 2023-lean expectation vs actual specials, as a dot plot */
 .dp { --dpbg: var(--bg); display: grid; gap: 0; font-size: 13px; font-variant-numeric: tabular-nums; }
 .dprow { display: grid; grid-template-columns: 84px minmax(0, 1fr) 56px 60px; gap: 10px; align-items: center; min-height: 28px; border-bottom: 1px solid var(--line); }
@@ -540,6 +557,7 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
   <div class="wrap tabrow">
     <a href="#parliament" id="tab-parliament">Parliament</a>
     <a href="#electorates" id="tab-electorates">Electorates</a>
+    <a href="#mps" id="tab-mps">MPs</a>
     <a href="#specials" id="tab-specials"><span class="tl-wide" id="tabSpecLabel">Special vote projection</span><span class="tl-short">Specials</span></a>
   </div>
 </nav>
@@ -612,6 +630,15 @@ footer { padding-block: 22px 40px; border-top: 1px solid var(--line); font-size:
           <li>Candidates: each party's specials follow how its voters split their candidate vote, estimated from that electorate's voting places. Seats re-run under MMP.</li>
         </ul>
       </details>
+    </div>
+  </section>
+
+  <section class="view" id="view-mps" hidden>
+    <div class="block">
+      <h2>Who's in Parliament</h2>
+      <p class="mpnote" id="mpNote"></p>
+      <input type="search" id="mpsearch" placeholder="Search MPs or electorates" aria-label="Search MPs">
+      <div class="mpgrid" id="mpgrid"></div>
     </div>
   </section>
 
@@ -1565,13 +1592,73 @@ function finalLeanHTML(e, L23) {
   </div>`;
 }
 
+/* ---------- MPs ---------- */
+// Electorate winners, then each party's list seats filled in list order, skipping anyone who won an electorate.
+// Derived from the results: the Commission declares list MPs, and a resignation or vacancy would change it.
+function mpsFrom(partyList, electorates) {
+  const byParty = {};
+  const won = new Set();
+  electorates.forEach(e => {
+    const w = e.candidates[0]; if (!w || !w.votes) return;
+    const pid = isListParty(w.party) ? w.party : "ind";
+    (byParty[pid] = byParty[pid] || { elect: [], list: [], next: [] }).elect.push({ id: w.id, name: w.name, e: e.name, l: w.list });
+    won.add(w.id);
+  });
+  partyList.filter(p => p.seats > 0).forEach(p => {
+    const g = byParty[p.id] = byParty[p.id] || { elect: [], list: [], next: [] };
+    const nList = Math.max(0, p.seats - g.elect.length);
+    const ranked = (DATA.cands || []).filter(c => c.p === p.id && c.l > 0 && !won.has(c.id)).sort((a, b) => a.l - b.l);
+    g.list = ranked.slice(0, nList); g.next = ranked.slice(nList, nList + 2);
+    g.elect.sort((a, b) => a.e.localeCompare(b.e, "en-NZ"));
+  });
+  return byParty;
+}
+function renderMPs() {
+  if (!DATA.cands) { $("#tab-mps").hidden = true; return; }
+  $("#tab-mps").hidden = false;
+  const now = mpsFrom(DATA.parties, DATA.electorates);
+  const fin = isFinal();
+  const then = fin ? mpsFrom(DATA.prelim.parties, DATA.prelim.electorates) : null;
+  const ids = g => [...g.elect, ...g.list].map(c => c.id);
+  const ename = Object.fromEntries(DATA.electorates.map(e => [e.id, e.name]));
+  $("#mpNote").textContent = (fin ? "From the official results. " : "From the preliminary results; this will change when specials are counted. ") +
+    "Electorate winners, then each party's list seats filled in list order, skipping anyone who won an electorate. The Commission formally declares list MPs, and a resignation would bring in the next person on the list.";
+  const order = Object.keys(now).sort((a, b) => ((parties[b]?.seats || 0) - (parties[a]?.seats || 0)) || a.localeCompare(b));
+  $("#mpgrid").innerHTML = order.map(pid => {
+    const g = now[pid], p = parties[pid];
+    const was = then && then[pid] ? new Set(ids(then[pid])) : null;
+    const isNew = c => was && !was.has(c.id) ? `<span class="newtag" title="Not an MP on election-night results">New</span>` : "";
+    const outs = then && then[pid] ? [...then[pid].elect, ...then[pid].list].filter(c => !ids(g).includes(c.id)) : [];
+    const li = (rk, c, sub, mp = true) => `<li data-q="${esc((person(c.n || c.name).full + " " + (sub || "")).toLocaleLowerCase("en-NZ"))}"><span class="rk">${rk}</span><span class="w"><b>${esc(person(c.n || c.name).full)}</b>${mp ? isNew(c) : ""}${sub ? ` <small>${esc(sub)}</small>` : ""}</span></li>`;
+    const seats = g.elect.length + g.list.length;
+    return `<div class="mpcard" style="--pc:${p ? pc(p) : "var(--p-other)"}">
+      <h3>${esc(p ? pname(p) : "Independent")}<span class="num">${seats}</span></h3>
+      <div class="msub">${g.elect.length} electorate · ${g.list.length} list</div>
+      ${g.elect.length ? `<h4>Electorate</h4><ul class="mplist">${g.elect.map(c => li(c.l ? "#" + c.l : "", c, c.e)).join("")}</ul>` : ""}
+      ${g.list.length ? `<h4>List</h4><ul class="mplist">${g.list.map(c => li("#" + c.l, c, c.e && ename[c.e] ? "stood in " + ename[c.e] : "")).join("")}</ul>` : ""}
+      ${g.next.length ? `<h4>Next on the list</h4><ul class="mplist next">${g.next.map(c => li("#" + c.l, c, "", false)).join("")}</ul>` : ""}
+      ${outs.length ? `<p class="mpout">Out since election night: ${outs.map(c => esc(person(c.n || c.name).full)).join(", ")}</p>` : ""}
+    </div>`;
+  }).join("");
+  filterMPs();
+}
+function filterMPs() {
+  const q = $("#mpsearch").value.trim().toLocaleLowerCase("en-NZ");
+  document.querySelectorAll("#mpgrid .mpcard").forEach(card => {
+    let any = false;
+    card.querySelectorAll(".mplist:not(.next) li").forEach(li => { const hit = !q || li.dataset.q.includes(q); li.hidden = !hit; any = any || hit; });
+    card.classList.toggle("dim", !!q && !any);
+  });
+}
+$("#mpsearch").addEventListener("input", filterMPs);
+
 /* ---------- routing ---------- */
 function route() {
   const h = location.hash.slice(1);
   const m = /^e(\d+)$/.exec(h);
-  const view = m || h === "electorates" ? "electorates" : h === "specials" && DATA.sp23 ? "specials" : "parliament";
+  const view = m || h === "electorates" ? "electorates" : h === "mps" ? "mps" : h === "specials" && DATA.sp23 ? "specials" : "parliament";
   $("#tab-specials").hidden = !DATA.sp23;
-  ["parliament", "electorates", "specials"].forEach(v => {
+  ["parliament", "electorates", "mps", "specials"].forEach(v => {
     $("#view-" + v).hidden = view !== v;
     $("#tab-" + v).removeAttribute("aria-current");
   });
@@ -1691,6 +1778,7 @@ function renderAll() {
   refreshParl();
   derive(DATA);
   renderVotes();
+  renderMPs();
   renderLeadStrip();
   renderGrid();
   if (SIM.on && SIM.result) derive(DATA, SIM.result.parties);

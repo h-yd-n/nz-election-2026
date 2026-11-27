@@ -276,6 +276,7 @@ def main():
             "name": c.findtext("candidate_name") or "",
             "party": c.findtext("party") or "",
             "list": num(c, "list_no"),
+            "e": num(c, "electorate"),
         }
 
     names = [(e.get("e_no"), e.findtext("electorate_name")) for e in elects_x]
@@ -308,6 +309,8 @@ def main():
         electorates = list(ex.map(load_e, names))
 
     st = election.find("statistics")
+    # every candidate, list-only ones included, for the MPs tab: id, name, party, list rank, electorate contested
+    all_cands = [{"id": k, "n": v["name"], "p": v["party"], "l": v["list"], "e": v["e"]} for k, v in cands.items()]
     data = {
         "updated": election.get("updated"),
         "stats": {
@@ -322,6 +325,7 @@ def main():
         },
         "parties": list(parties.values()),
         "electorates": electorates,
+        "cands": all_cands,
     }
     # Final mode: the feed has moved on from the election-night snapshot
     try:
