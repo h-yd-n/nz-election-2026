@@ -1,0 +1,615 @@
+{
+"source": "Parliament member contact details as at 11 June 2026 (names, party, electorate only)",
+"mps": [
+{
+"name": "Abel, Steve",
+"party": "Green Party",
+"electorate": ""
+},
+{
+"name": "Andersen, Ginny",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Anderson, Miles",
+"party": "National Party",
+"electorate": "Waitaki"
+},
+{
+"name": "Arbuckle, Jamie",
+"party": "NZ First",
+"electorate": ""
+},
+{
+"name": "Bates, Carl",
+"party": "National Party",
+"electorate": "Whanganui"
+},
+{
+"name": "Bayly, Andrew",
+"party": "National Party",
+"electorate": "Port Waikato"
+},
+{
+"name": "Belich, Camilla",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Bennett, Glen",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Bidois, Daniel",
+"party": "National Party",
+"electorate": "Northcote"
+},
+{
+"name": "Bishop, Chris",
+"party": "National Party",
+"electorate": "Hutt South"
+},
+{
+"name": "Boyack, Rachel",
+"party": "Labour Party",
+"electorate": "Nelson"
+},
+{
+"name": "Brewer, Cameron",
+"party": "National Party",
+"electorate": "Upper Harbour"
+},
+{
+"name": "Brooking, Rachel",
+"party": "Labour Party",
+"electorate": "Dunedin"
+},
+{
+"name": "Brown, Simeon",
+"party": "National Party",
+"electorate": "Pakuranga"
+},
+{
+"name": "Brownlee, Gerard",
+"party": "National Party",
+"electorate": ""
+},
+{
+"name": "Butterick, Mike",
+"party": "National Party",
+"electorate": "Wairarapa"
+},
+{
+"name": "Cameron, Mark",
+"party": "ACT New Zealand",
+"electorate": ""
+},
+{
+"name": "Campbell, Hamish",
+"party": "National Party",
+"electorate": "Ilam"
+},
+{
+"name": "Carter, Kahurangi",
+"party": "Green Party",
+"electorate": ""
+},
+{
+"name": "Cheung, Carlos",
+"party": "National Party",
+"electorate": "Mt Roskill"
+},
+{
+"name": "Chhour, Karen",
+"party": "ACT New Zealand",
+"electorate": ""
+},
+{
+"name": "Costello, Casey",
+"party": "NZ First",
+"electorate": ""
+},
+{
+"name": "Costley, Tim",
+"party": "National Party",
+"electorate": "Ōtaki"
+},
+{
+"name": "Court, Simon",
+"party": "ACT New Zealand",
+"electorate": ""
+},
+{
+"name": "Dansey, Georgina",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Davidson, Marama",
+"party": "Green Party",
+"electorate": ""
+},
+{
+"name": "Davidson, Mike",
+"party": "Green Party",
+"electorate": ""
+},
+{
+"name": "Davidson, Reuben",
+"party": "Labour Party",
+"electorate": "Christchurch East"
+},
+{
+"name": "Doocey, Matt",
+"party": "National Party",
+"electorate": "Waimakariri"
+},
+{
+"name": "Edmonds, Barbara",
+"party": "Labour Party",
+"electorate": "Mana"
+},
+{
+"name": "Ferris, Tākuta",
+"party": "Independent",
+"electorate": "Te Tai Tonga"
+},
+{
+"name": "Fleming, Greg",
+"party": "National Party",
+"electorate": "Maungakiekie"
+},
+{
+"name": "Foster, Andy",
+"party": "NZ First",
+"electorate": ""
+},
+{
+"name": "Garcia, Paulo",
+"party": "National Party",
+"electorate": "New Lynn"
+},
+{
+"name": "Genter, Julie Anne",
+"party": "Green Party",
+"electorate": "Rongotai"
+},
+{
+"name": "Goldsmith, Paul",
+"party": "National Party",
+"electorate": ""
+},
+{
+"name": "Grigg, Nicola",
+"party": "National Party",
+"electorate": "Selwyn"
+},
+{
+"name": "Halbert, Shanan",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Hamilton, Ryan",
+"party": "National Party",
+"electorate": "Hamilton East"
+},
+{
+"name": "Hernandez, Francisco",
+"party": "Green Party",
+"electorate": ""
+},
+{
+"name": "Hipkins, Chris",
+"party": "Labour Party",
+"electorate": "Remutaka"
+},
+{
+"name": "Hoggard, Andrew",
+"party": "ACT New Zealand",
+"electorate": ""
+},
+{
+"name": "Jackson, Willie",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Jones, Shane",
+"party": "NZ First",
+"electorate": ""
+},
+{
+"name": "Kaipara, Oriini",
+"party": "Te Pāti Māori",
+"electorate": "Tāmaki Makaurau"
+},
+{
+"name": "Kapa-Kingi, Mariameno",
+"party": "Independent",
+"electorate": "Te Tai Tokerau"
+},
+{
+"name": "Kirkpatrick, Dana",
+"party": "National Party",
+"electorate": "East Coast"
+},
+{
+"name": "Kuriger, Barbara",
+"party": "National Party",
+"electorate": "Taranaki-King Country"
+},
+{
+"name": "Leary, Ingrid",
+"party": "Labour Party",
+"electorate": "Taieri"
+},
+{
+"name": "Lee, Melissa",
+"party": "National Party",
+"electorate": ""
+},
+{
+"name": "Lu, Nan",
+"party": "National Party",
+"electorate": ""
+},
+{
+"name": "Luxon, Christopher",
+"party": "National Party",
+"electorate": "Botany"
+},
+{
+"name": "Luxton, Cameron",
+"party": "ACT New Zealand",
+"electorate": ""
+},
+{
+"name": "Luxton, Jo-Anne",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Lyndon, Hūhana",
+"party": "Green Party",
+"electorate": ""
+},
+{
+"name": "MacLeod, David",
+"party": "National Party",
+"electorate": "New Plymouth"
+},
+{
+"name": "Maipi-Clarke, Hana-Rawhiti",
+"party": "Te Pāti Māori",
+"electorate": "Hauraki-Waikato"
+},
+{
+"name": "Marcroft, Jenny",
+"party": "NZ First",
+"electorate": ""
+},
+{
+"name": "McAnulty, Kieran",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "McCallum, Grant",
+"party": "National Party",
+"electorate": "Northland"
+},
+{
+"name": "McClay, Todd",
+"party": "National Party",
+"electorate": "Rotorua"
+},
+{
+"name": "McClure, Laura",
+"party": "ACT New Zealand",
+"electorate": ""
+},
+{
+"name": "McKee, Nicole",
+"party": "ACT New Zealand",
+"electorate": ""
+},
+{
+"name": "McLellan, Tracey",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Meager, James",
+"party": "National Party",
+"electorate": "Rangitata"
+},
+{
+"name": "Menéndez March, Ricardo",
+"party": "Green Party",
+"electorate": ""
+},
+{
+"name": "Mitchell, Mark",
+"party": "National Party",
+"electorate": "Whangaparāoa"
+},
+{
+"name": "Mooney, Joseph",
+"party": "National Party",
+"electorate": "Southland"
+},
+{
+"name": "Nakhle, Rima",
+"party": "National Party",
+"electorate": "Takanini"
+},
+{
+"name": "Ngarewa-Packer, Debbie",
+"party": "Te Pāti Māori",
+"electorate": "Te Tai Hauāuru"
+},
+{
+"name": "Nimon, Katie",
+"party": "National Party",
+"electorate": "Napier"
+},
+{
+"name": "O'Connor, Damien",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "O'Connor, Greg",
+"party": "Labour Party",
+"electorate": "Ōhāriu"
+},
+{
+"name": "Parmar, Parmjeet",
+"party": "ACT New Zealand",
+"electorate": ""
+},
+{
+"name": "Patterson, Mark",
+"party": "NZ First",
+"electorate": ""
+},
+{
+"name": "Paul, Tamatha",
+"party": "Green Party",
+"electorate": "Wellington Central"
+},
+{
+"name": "Penk, Chris",
+"party": "National Party",
+"electorate": "Kaipara ki Mahurangi"
+},
+{
+"name": "Peters, Winston",
+"party": "NZ First",
+"electorate": ""
+},
+{
+"name": "Pham, Lan",
+"party": "Green Party",
+"electorate": ""
+},
+{
+"name": "Potaka, Tama",
+"party": "National Party",
+"electorate": "Hamilton West"
+},
+{
+"name": "Prime, Willow-Jean",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Pugh, Maureen",
+"party": "National Party",
+"electorate": "West Coast-Tasman"
+},
+{
+"name": "Radhakrishnan, Priyanca",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Redmayne, Suze",
+"party": "National Party",
+"electorate": "Rangitīkei"
+},
+{
+"name": "Reti, Shane",
+"party": "National Party",
+"electorate": "Whangārei"
+},
+{
+"name": "Rosewarne, Daniel",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Russell, Deborah",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Rutherford, Tom",
+"party": "National Party",
+"electorate": "Bay of Plenty"
+},
+{
+"name": "Salesa, Jenny",
+"party": "Labour Party",
+"electorate": "Panmure-Ōtāhuhu"
+},
+{
+"name": "Sepuloni, Carmel",
+"party": "Labour Party",
+"electorate": "Kelston"
+},
+{
+"name": "Seymour, David",
+"party": "ACT New Zealand",
+"electorate": "Epsom"
+},
+{
+"name": "Simmonds, Penny",
+"party": "National Party",
+"electorate": "Invercargill"
+},
+{
+"name": "Simpson, Scott",
+"party": "National Party",
+"electorate": "Coromandel"
+},
+{
+"name": "Smith, Stuart",
+"party": "National Party",
+"electorate": "Kaikōura"
+},
+{
+"name": "Sosene, Lemauga Lydia",
+"party": "Labour Party",
+"electorate": "Māngere"
+},
+{
+"name": "Stanford, Erica",
+"party": "National Party",
+"electorate": "East Coast Bays"
+},
+{
+"name": "Stephenson, Todd",
+"party": "ACT New Zealand",
+"electorate": ""
+},
+{
+"name": "Swarbrick, Chlöe",
+"party": "Green Party",
+"electorate": "Auckland Central"
+},
+{
+"name": "Tangaere-Manuel, Cushla",
+"party": "Labour Party",
+"electorate": "Ikaroa-Rāwhiti"
+},
+{
+"name": "Tinetti, Jan",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Tuiono, Teanau",
+"party": "Green Party",
+"electorate": ""
+},
+{
+"name": "Twyford, Philip",
+"party": "Labour Party",
+"electorate": "Te Atatū"
+},
+{
+"name": "Uffindell, Sam",
+"party": "National Party",
+"electorate": "Tauranga"
+},
+{
+"name": "Upston, Louise",
+"party": "National Party",
+"electorate": "Taupō"
+},
+{
+"name": "Utikere, Tangi",
+"party": "Labour Party",
+"electorate": "Palmerston North"
+},
+{
+"name": "van de Molen, Tim",
+"party": "National Party",
+"electorate": "Waikato"
+},
+{
+"name": "van Velden, Brooke",
+"party": "ACT New Zealand",
+"electorate": "Tāmaki"
+},
+{
+"name": "Verrall, Ayesha",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Wade-Brown, Celia",
+"party": "Green Party",
+"electorate": ""
+},
+{
+"name": "Waititi, Rawiri",
+"party": "Te Pāti Māori",
+"electorate": "Waiariki"
+},
+{
+"name": "Walters, Vanushi",
+"party": "Labour Party",
+"electorate": ""
+},
+{
+"name": "Watts, Simon",
+"party": "National Party",
+"electorate": "North Shore"
+},
+{
+"name": "Webb, Duncan",
+"party": "Labour Party",
+"electorate": "Christchurch Central"
+},
+{
+"name": "Wedd, Catherine",
+"party": "National Party",
+"electorate": "Tukituki"
+},
+{
+"name": "Weenink, Vanessa",
+"party": "National Party",
+"electorate": "Banks Peninsula"
+},
+{
+"name": "White, Helen",
+"party": "Labour Party",
+"electorate": "Mt Albert"
+},
+{
+"name": "Williams, Arena",
+"party": "Labour Party",
+"electorate": "Manurewa"
+},
+{
+"name": "Willis, Nicola",
+"party": "National Party",
+"electorate": ""
+},
+{
+"name": "Willis, Scott",
+"party": "Green Party",
+"electorate": ""
+},
+{
+"name": "Wilson, David",
+"party": "NZ First",
+"electorate": ""
+},
+{
+"name": "Woods, Megan",
+"party": "Labour Party",
+"electorate": "Wigram"
+},
+{
+"name": "Xu-Nan, Lawrence",
+"party": "Green Party",
+"electorate": ""
+}
+]
+}

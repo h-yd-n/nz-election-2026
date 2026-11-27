@@ -431,7 +431,9 @@ dialog.detail[open] { animation: slide .2s ease; }
 .mplist li { overflow-wrap: anywhere; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 6px; padding: 4px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
 .mplist .rk { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 .mplist .w small { color: var(--muted); }
-.mplist .newtag { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--good); margin-left: 4px; }
+.mplist .newmp { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; line-height: 1; padding: 3px 5px 2px; border-radius: 3px; background: var(--ink); color: var(--on-ink); margin-left: 6px; vertical-align: 1px; white-space: nowrap; }
+.mplist .newmp.ret { background: none; color: var(--fg); box-shadow: inset 0 0 0 1px var(--fg); }
+.mplist .newtag { font-size: 10.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--good); margin-left: 6px; white-space: nowrap; }
 .mplist.next li { color: var(--muted); border-bottom-style: dashed; }
 .mpout { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
 .mpcard.dim { display: none; }
@@ -1625,19 +1627,23 @@ function renderMPs() {
   const then = fin ? mpsFrom(DATA.prelim.parties, DATA.prelim.electorates) : null;
   const ids = g => [...g.elect, ...g.list].map(c => c.id);
   const ename = Object.fromEntries(DATA.electorates.map(e => [e.id, e.name]));
+  const wasMP = new Set((DATA.cands || []).filter(c => c.mp).map(c => c.id)), prevKnown = wasMP.size > 0;
+  const returning = new Set((DATA.cands || []).filter(c => c.ret).map(c => c.id));
+  const isNewMP = c => prevKnown && !wasMP.has(c.id) && !returning.has(c.id);
   $("#mpNote").textContent = (fin ? "From the official results. " : "From the preliminary results; this will change when specials are counted. ") +
-    "Electorate winners, then each party's list seats filled in list order, skipping anyone who won an electorate. The Commission formally declares list MPs, and a resignation would bring in the next person on the list.";
+    (prevKnown ? "New MP marks first-time MPs; Returning MP marks former MPs who weren't in the last Parliament. " : "") + "Electorate winners, then each party's list seats filled in list order, skipping anyone who won an electorate. The Commission formally declares list MPs, and a resignation would bring in the next person on the list.";
   const order = Object.keys(now).sort((a, b) => ((parties[b]?.seats || 0) - (parties[a]?.seats || 0)) || a.localeCompare(b));
   $("#mpgrid").innerHTML = order.map(pid => {
     const g = now[pid], p = parties[pid];
     const was = then && then[pid] ? new Set(ids(then[pid])) : null;
-    const isNew = c => was && !was.has(c.id) ? `<span class="newtag" title="Not an MP on election-night results">New</span>` : "";
+    const isNew = c => (isNewMP(c) ? `<span class="newmp" title="First time in Parliament">New MP</span>` : returning.has(c.id) ? `<span class="newmp ret" title="Former MP, not in the last Parliament">Returning MP</span>` : "") +
+      (was && !was.has(c.id) ? `<span class="newtag" title="Not an MP on the election-night count">In since election night</span>` : "");
     const outs = then && then[pid] ? [...then[pid].elect, ...then[pid].list].filter(c => !ids(g).includes(c.id)) : [];
     const li = (rk, c, sub, mp = true) => `<li data-q="${esc((person(c.n || c.name).full + " " + (sub || "")).toLocaleLowerCase("en-NZ"))}"><span class="rk">${rk}</span><span class="w"><b>${esc(person(c.n || c.name).full)}</b>${mp ? isNew(c) : ""}${sub ? ` <small>${esc(sub)}</small>` : ""}</span></li>`;
     const seats = g.elect.length + g.list.length;
     return `<div class="mpcard" style="--pc:${p ? pc(p) : "var(--p-other)"}">
       <h3>${esc(p ? pname(p) : "Independent")}<span class="num">${seats}</span></h3>
-      <div class="msub">${g.elect.length} electorate · ${g.list.length} list</div>
+      <div class="msub">${g.elect.length} electorate · ${g.list.length} list${prevKnown ? ` · ${[...g.elect, ...g.list].filter(isNewMP).length} new` : ""}</div>
       ${g.elect.length ? `<h4>Electorate</h4><ul class="mplist">${g.elect.map(c => li(c.l ? "#" + c.l : "", c, c.e)).join("")}</ul>` : ""}
       ${g.list.length ? `<h4>List</h4><ul class="mplist">${g.list.map(c => li("#" + c.l, c, c.e && ename[c.e] ? "stood in " + ename[c.e] : "")).join("")}</ul>` : ""}
       ${g.next.length ? `<h4>Next on the list</h4><ul class="mplist next">${g.next.map(c => li("#" + c.l, c, "", false)).join("")}</ul>` : ""}

@@ -237,6 +237,41 @@ def coastline():
     return rings
 
 
+# Same person, different first name between the Parliament list and the ballot
+NAME_ALIASES = {"gerard": "gerry", "willie": "william", "georgina": "georgie"}
+
+
+def previous_mps(cands, file="mps54.json"):
+    """Candidate ids whose name is in `file`. Matches on surname (a double-barrelled surname matches either part)
+    and first name, where one first name may be a short form of the other (Dan/Daniel, Jo/Jo-Anne), plus
+    NAME_ALIASES."""
+    import re
+    import unicodedata
+    try:
+        mps = json.loads((HERE / file).read_text(encoding="utf-8"))["mps"]
+    except (OSError, ValueError, KeyError):
+        return set()
+
+    def key(n):
+        n = unicodedata.normalize("NFKD", n).encode("ascii", "ignore").decode().lower()
+        sur, _, first = n.partition(",")
+        f = re.sub(r"[^a-z ]", "", first.replace("-", "")).split()
+        f0 = f[0] if f else ""
+        # surname as its hyphen/space-separated parts, so Hipango matches Hipango-Brownlie
+        return tuple(p for p in re.sub(r"[^a-z\- ]", "", sur).replace("-", " ").split()), NAME_ALIASES.get(f0, f0)
+
+    def same_surname(a, b):
+        return a == b or (a and b and (a[0] == b[0] or a[-1] == b[-1]) and (set(a) <= set(b) or set(b) <= set(a)))
+
+    prev = [key(m["name"]) for m in mps]
+    out = set()
+    for cid, c in cands.items():
+        sur, first = key(c["name"])
+        if any(same_surname(s, sur) and f and first and (f.startswith(first) or first.startswith(f)) for s, f in prev):
+            out.add(cid)
+    return out
+
+
 def num(el, tag, cast=int, default=0):
     t = el.findtext(tag)
     try:
@@ -309,8 +344,12 @@ def main():
         electorates = list(ex.map(load_e, names))
 
     st = election.find("statistics")
+    # Candidates who sat in the last Parliament (mps54.json), for the MPs tab's "New MP" badge
+    was_mp = previous_mps(cands)
+    returning = previous_mps(cands, "former_mps.json") - was_mp  # former MPs not in the last Parliament
     # every candidate, list-only ones included, for the MPs tab: id, name, party, list rank, electorate contested
-    all_cands = [{"id": k, "n": v["name"], "p": v["party"], "l": v["list"], "e": v["e"]} for k, v in cands.items()]
+    all_cands = [{"id": k, "n": v["name"], "p": v["party"], "l": v["list"], "e": v["e"],
+                  **({"mp": 1} if k in was_mp else {}), **({"ret": 1} if k in returning else {})} for k, v in cands.items()]
     data = {
         "updated": election.get("updated"),
         "stats": {

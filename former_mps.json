@@ -1,0 +1,9 @@
+{
+  "note": "Former MPs standing in 2026 who were not in the last Parliament, so they get 'Returning MP' rather than 'New MP'. Not exhaustive: add anyone missing.",
+  "mps": [
+    {"name": "Wood, Michael", "was": "Labour, Mt Roskill 2016-2023"},
+    {"name": "Ngaro, Alfred", "was": "National list 2011-2020"},
+    {"name": "Hipango, Harete", "was": "National, Whanganui 2017-2020"},
+    {"name": "Laws, Michael", "was": "Hawke's Bay 1990-1996"}
+  ]
+}
