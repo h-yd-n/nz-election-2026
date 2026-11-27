@@ -436,12 +436,22 @@ dialog.detail[open] { animation: slide .2s ease; }
 .dm.pre { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--fg); background: var(--dpbg); }
 .dm.exp { width: 9px; height: 9px; background: var(--muted); transform: translate(-50%, -50%) rotate(45deg); box-shadow: 0 0 0 2px var(--dpbg); }
 .dm.act { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 2px var(--dpbg); }
+.dm { transition: transform .12s ease; }
+.dm.hot { z-index: 2; transform: translate(-50%, -50%) scale(1.45); }
+.dm.exp.hot { transform: translate(-50%, -50%) rotate(45deg) scale(1.45); }
+.dtrack { cursor: crosshair; touch-action: pan-y; }
+.dtip { position: fixed; z-index: 60; pointer-events: none; padding: 7px 10px; border-radius: 6px; font-size: 12.5px; line-height: 1.45;
+  background: var(--ink); color: var(--on-ink); box-shadow: 0 4px 14px rgba(0,0,0,.18); font-variant-numeric: tabular-nums; max-width: 260px; }
+.dtip b { font-weight: 700; } .dtip .o { opacity: .7; } .dtip .k { display: inline-block; width: 12px; }
 .dlegend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--muted); margin: 0 0 10px; }
 .dlegend span { display: inline-flex; align-items: center; gap: 7px; }
 .dlegend .dm { position: relative; top: auto; transform: none; display: inline-block; }
 .dlegend .dm.exp { transform: rotate(45deg); }
 .dlegend .dm.act { background: var(--fg); }
 .dprow .dv { font-weight: 700; }
+.dp .short { display: none; }
+.dp.withseats .dprow { grid-template-columns: 84px minmax(0, 1fr) 56px 60px 64px 72px; }
+.dprow .sd { font-size: 11.5px; color: var(--muted); font-weight: 600; }
 .dprow .up { color: var(--fg); } .dprow .dn { color: var(--fg); }
 .finsum { margin: 0 0 18px; max-width: 72ch; } .finsum p { margin: 0 0 8px; }
 .fintable { margin-top: 14px; font-size: 13.5px; } .fintable summary { cursor: pointer; font-weight: 600; width: fit-content; margin-bottom: 8px; }
@@ -450,6 +460,8 @@ dialog.detail[open] { animation: slide .2s ease; }
 .chg b { margin-left: 6px; }
 @media (max-width: 480px) {
   .dprow { grid-template-columns: 44px minmax(0, 1fr) 40px; gap: 6px; } .dprow > :nth-child(4) { display: none; }
+  .dp.withseats .dprow { grid-template-columns: 40px minmax(0, 1fr) 36px 52px; } .dp.withseats .dprow > :nth-child(5) { display: none; }
+  .dp .short { display: inline; } .dp .wide { display: none; }
   .dprow .lname .sw { display: none; }
   .dm.pre { width: 9px; height: 9px; } .dm.exp { width: 7px; height: 7px; } .dm.act { width: 10px; height: 10px; }
   .chg .pts { display: none; } .chg b { margin: 0; }
@@ -1407,7 +1419,7 @@ function computePre() {
 }
 
 // Dot plot: election-night share (hollow), share the 2023 lean pointed to (grey diamond), actual specials (filled)
-function dotPlot(rows) {
+function dotPlot(rows, { seats = false } = {}) {
   const hasExp = rows.some(r => r.exp != null);
   const raw = Math.max(1, ...rows.flatMap(r => [r.pre, r.exp || 0, r.act]));
   const step = raw <= 10 ? 2 : raw <= 40 ? 5 : 10, max = Math.ceil(raw / step) * step;
@@ -1423,23 +1435,62 @@ function dotPlot(rows) {
   const body = rows.map(r => {
     const a = Math.min(r.pre, r.act), b = Math.max(r.pre, r.act);
     const tip = `${r.name}: election night ${r.pre.toFixed(1)}%${r.exp != null ? `, 2023 lean ${r.exp.toFixed(1)}%` : ""}, actual specials ${r.act.toFixed(1)}%`;
-    return `<div class="dprow" title="${esc(tip)}">
+    return `<div class="dprow" data-tip="${esc(JSON.stringify({ name: r.name, pre: r.pre, exp: r.exp, act: r.act, n: Math.round(r.n) }))}" aria-label="${esc(tip)}">
       <span class="lname"><span class="sw" style="background:${r.color}"></span>${esc(r.label)}</span>
       <span class="dtrack">${grid}
         <i class="cn" style="left:${x(a)};width:calc(${x(b)} - ${x(a)});background:${r.color}"></i>
-        <i class="dm pre" style="left:${x(r.pre)}"></i>
-        ${r.exp != null ? `<i class="dm exp" style="left:${x(r.exp)}"></i>` : ""}
-        <i class="dm act" style="left:${x(r.act)};background:${r.color}"></i>
+        <i class="dm pre" data-k="pre" style="left:${x(r.pre)}"></i>
+        ${r.exp != null ? `<i class="dm exp" data-k="exp" style="left:${x(r.exp)}"></i>` : ""}
+        <i class="dm act" data-k="act" style="left:${x(r.act)};background:${r.color}"></i>
       </span>
       <span class="r num dv">${r.act.toFixed(1)}</span>
       <span class="r num">${sg(cmp(r))}</span>
+      ${seats ? seatCells(r) : ""}
     </div>`;
   }).join("");
-  return `${legend}<div class="dp">
-    <div class="dprow dhead"><span></span><span>% of party vote</span><span class="r">Specials</span><span class="r">${hasExp ? "vs 2023" : "vs prelim."}</span></div>
+  return `${legend}<div class="dp${seats ? " withseats" : ""}">
+    <div class="dprow dhead"><span></span><span>% of party vote</span><span class="r">Specials</span><span class="r">${hasExp ? "vs 2023" : "vs prelim."}</span>${seats ? `<span class="r" title="Seats on election night">Prelim. seats</span><span class="r"><span class="wide">Final seats</span><span class="short">Seats</span></span>` : ""}</div>
     ${body}
-    <div class="dprow daxis"><span></span><span class="dtrack">${ticks.map(t => `<span style="left:${x(t)}">${t}</span>`).join("")}</span><span></span><span></span></div>
+    <div class="dprow daxis"><span></span><span class="dtrack">${ticks.map(t => `<span style="left:${x(t)}">${t}</span>`).join("")}</span><span></span><span></span>${seats ? "<span></span><span></span>" : ""}</div>
   </div>`;
+}
+
+// Hover any point: the nearest marker in that row lights up and a tooltip gives all three values, the hovered one first.
+// Hit area is the whole track, so small or overlapping markers are still easy to reach.
+{
+  const tip = document.createElement("div"); tip.className = "dtip"; tip.hidden = true; document.body.appendChild(tip);
+  let hot = null;
+  const clear = () => { tip.hidden = true; if (hot) hot.classList.remove("hot"); hot = null; };
+  const LBL = { pre: "Election night", exp: "Specials if they leaned like 2023", act: "Actual 2026 specials" };
+  const onPoint = ev => {
+    const tr = ev.target.closest && ev.target.closest(".dprow:not(.dhead):not(.daxis) .dtrack");
+    if (!tr) return clear();
+    const ms = [...tr.querySelectorAll(".dm")];
+    const near = ms.map(m => { const r = m.getBoundingClientRect(); return [Math.abs(r.left + r.width / 2 - ev.clientX), m]; }).sort((a, b) => a[0] - b[0])[0];
+    if (!near) return clear();
+    const m = near[1];
+    const host = tr.closest("dialog") || document.body;
+    if (tip.parentNode !== host) host.appendChild(tip);
+    if (hot !== m) { if (hot) hot.classList.remove("hot"); hot = m; m.classList.add("hot"); }
+    const d = JSON.parse(tr.closest(".dprow").dataset.tip), k = m.dataset.k;
+    const line = key => d[key] == null ? "" : `<div class="${key === k ? "" : "o"}">${key === k ? "<b>" : ""}${LBL[key]}: ${d[key].toFixed(1)}%${key === "act" ? ` (${fmt(d.n)} votes)` : ""}${key === k ? "</b>" : ""}</div>`;
+    tip.innerHTML = `<div><b>${esc(d.name)}</b></div>` + line(k) + ["pre", "exp", "act"].filter(x => x !== k).map(line).join("");
+    tip.hidden = false;
+    const r = m.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+    let left = r.left + r.width / 2 - w / 2, top = r.top - h - 10;
+    left = Math.max(8, Math.min(innerWidth - w - 8, left)); if (top < 8) top = r.bottom + 10;
+    tip.style.left = left + "px"; tip.style.top = top + "px";
+  };
+  document.addEventListener("pointermove", onPoint);
+  document.addEventListener("pointerdown", onPoint); // touch: tap a row to see its values
+  document.addEventListener("pointerleave", clear);
+  addEventListener("scroll", clear, { passive: true });
+}
+
+function seatCells(r) {
+  if (r.id === "other") return `<span></span><span></span>`;
+  const a = prelimParty(r.id).seats || 0, b = parties[r.id]?.seats || 0, d = b - a;
+  return `<span class="r num">${a || "–"}</span><span class="r num"><b>${b || "–"}</b>${d ? ` <span class="sd">${d > 0 ? "+" : "−"}${Math.abs(d)}</span>` : ""}</span>`;
 }
 
 // Rows for the dot plot from election-night votes, final votes and the 2023-lean projection's specials, by party id
@@ -1468,7 +1519,7 @@ function renderFinal() {
   const expV = PRE ? Object.fromEntries(PRE.parties.filter(p => p.specials > 0).map(p => [p.id, p.specials])) : null;
   const seatedNowOrThen = id => (parties[id]?.seats || 0) > 0 || prelimParty(id).seats > 0;
   const { rows, specT } = specRows(preV, finV, expV, 1, seatedNowOrThen);
-  $("#finChart").innerHTML = dotPlot(rows);
+  $("#finChart").innerHTML = dotPlot(rows, { seats: true });
   const named = rows.filter(r => r.id !== "other");
   const sg = v => (v > 0 ? "+" : "−") + Math.abs(v).toFixed(1);
   const lean = [...named].sort((a, b) => (b.act - b.pre) - (a.act - a.pre));
